@@ -45,3 +45,5 @@ target/
 
 # --- DATOS SENSIBLES ---
 src/main/resources/application.properties
+appsettings.json
+appsettings*.json
