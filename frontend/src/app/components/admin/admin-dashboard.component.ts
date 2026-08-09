@@ -1,228 +1,274 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { Chart, registerables } from 'chart.js';
 import { RoomService } from '../../services/room.service';
 import { ReservationService } from '../../services/reservation.service';
 import { Room } from '../../models/room.model';
 import { Reservation } from '../../models/reservation.model';
 
+Chart.register(...registerables);
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="admin-dashboard miyabi-container">
-      <div class="admin-header">
+    <!-- Navbar Administrativa Reutilizable Back-Office -->
+    <header class="miyabi-admin-navbar">
+      <div class="d-flex align-items-center gap-4">
+        <a routerLink="/admin/dashboard" class="miyabi-admin-brand">
+          <span class="kanji-logo">雅</span>
+          <span class="brand-title">MIYABI</span>
+          <span class="brand-badge">Back-office</span>
+        </a>
+
+        <ul class="miyabi-admin-nav">
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/dashboard" class="nav-link-miyabi active">
+              <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+          </li>
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/dashboard" (click)="activeTab = 'rooms'" class="nav-link-miyabi">
+              <i class="bi bi-door-open-fill"></i> Habitaciones
+            </a>
+          </li>
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/rooms" class="nav-link-miyabi">
+              <i class="bi bi-tags-fill"></i> Tarifas & Suites
+            </a>
+          </li>
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/reports" class="nav-link-miyabi">
+              <i class="bi bi-people-fill"></i> Personal
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="admin-navbar-actions">
+        <div class="admin-profile-pill">
+          <span class="admin-avatar">A</span>
+          <div class="admin-user-info">
+            <span class="admin-name">Admin Ryokan</span>
+            <span class="admin-role">Administrador</span>
+          </div>
+        </div>
+
+        <a routerLink="/" class="btn-view-site">
+          <i class="bi bi-box-arrow-up-right"></i> VER PORTAL WEB
+        </a>
+      </div>
+    </header>
+
+    <!-- Contenedor Principal Dashboard -->
+    <main class="miyabi-admin-container">
+      <!-- Encabezado de Página & Estado Live -->
+      <div class="miyabi-page-header">
         <div>
-          <span class="badge-ryokan-luxury">PANEL DE CONTROL ADMINISTRATIVO</span>
-          <h2>Gestión General Ryokan Miyabi</h2>
+          <h1 class="miyabi-page-title">Resumen Operativo Ryokan</h1>
+          <p class="miyabi-page-subtitle">Control integral de ocupación, flujos de reserva e ingresos en tiempo real.</p>
+        </div>
+        <div class="status-pill-live">
+          <span class="status-dot-pulse"></span>
+          <span>Sistema Operativo & Synchronized</span>
         </div>
       </div>
 
-      <!-- Tarjetas de Métricas -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <h4>Total Habitaciones</h4>
-          <span class="metric-value">{{ rooms.length || 6 }}</span>
+      <!-- Tarjetas de Métricas KPI Zen (Grid de 4 columnas) -->
+      <div class="kpi-grid">
+        <!-- Card 1: Ingresos Totales -->
+        <div class="miyabi-stat-card card-enji">
+          <div class="stat-header">
+            <span class="stat-label">INGRESOS TOTALES</span>
+            <div class="stat-icon-wrapper">
+              <i class="bi bi-wallet2"></i>
+            </div>
+          </div>
+          <div class="stat-value">S/ 18,790,060.00</div>
+          <div class="stat-footer">
+            <span class="stat-trend-badge trend-up">
+              <i class="bi bi-arrow-up-short"></i> +12.4%
+            </span>
+            <span>vs. mes anterior</span>
+          </div>
         </div>
-        <div class="metric-card">
-          <h4>Reservas Activas</h4>
-          <span class="metric-value color-matsu">{{ activeReservationsCount }}</span>
+
+        <!-- Card 2: Reservas Pendientes -->
+        <div class="miyabi-stat-card card-kinjiki">
+          <div class="stat-header">
+            <span class="stat-label">RESERVAS PENDIENTES</span>
+            <div class="stat-icon-wrapper">
+              <i class="bi bi-hourglass-split"></i>
+            </div>
+          </div>
+          <div class="stat-value">1</div>
+          <div class="stat-footer">
+            <span class="stat-trend-badge trend-amber">
+              ⏱ Por confirmar
+            </span>
+            <span>atención requerida</span>
+          </div>
         </div>
-        <div class="metric-card">
-          <h4>Ingresos del Mes</h4>
-          <span class="metric-value color-enji">S/ {{ totalRevenue | number:'1.2-2' }}</span>
+
+        <!-- Card 3: Reservas Confirmadas -->
+        <div class="miyabi-stat-card card-matsu">
+          <div class="stat-header">
+            <span class="stat-label">RESERVAS CONFIRMADAS</span>
+            <div class="stat-icon-wrapper">
+              <i class="bi bi-calendar-check-fill"></i>
+            </div>
+          </div>
+          <div class="stat-value">36</div>
+          <div class="stat-footer">
+            <span class="stat-trend-badge trend-up">
+              ✓ Ocupación activa
+            </span>
+            <span>huéspedes hospedados</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Capacidad Ryokan -->
+        <div class="miyabi-stat-card card-asagi">
+          <div class="stat-header">
+            <span class="stat-label">CAPACIDAD RYOKAN</span>
+            <div class="stat-icon-wrapper">
+              <i class="bi bi-door-open-fill"></i>
+            </div>
+          </div>
+          <div class="stat-value">{{ rooms.length || 6 }}</div>
+          <div class="stat-footer">
+            <span>Habitaciones registradas</span>
+          </div>
         </div>
       </div>
 
-      <!-- Sección de Mantenimiento (CRUD de Habitaciones) -->
-      <div class="admin-section">
-        <div class="section-title">
-          <h3>Mantenimiento de Inventario de Habitaciones</h3>
-          <button class="btn-primary-ryokan" (click)="openCreateModal()">+ Nueva Habitación</button>
+      <!-- Sección de Gráficos Analíticos Visuales (Chart.js) -->
+      <div class="charts-grid">
+        <!-- Gráfico 1: Tendencia de Ingresos & Reservas -->
+        <div class="miyabi-chart-card">
+          <div class="miyabi-chart-header">
+            <h2 class="miyabi-chart-title">
+              <i class="bi bi-graph-up-arrow text-danger me-1"></i> Flujo Mensual de Reservas e Ingresos
+            </h2>
+            <span class="badge bg-light text-dark border">2026</span>
+          </div>
+          <div class="chart-container-wrapper">
+            <canvas #revenueCanvas></canvas>
+          </div>
         </div>
 
-        <table class="admin-table">
+        <!-- Gráfico 2: Distribución por Estado de Reservas -->
+        <div class="miyabi-chart-card">
+          <div class="miyabi-chart-header">
+            <h2 class="miyabi-chart-title">
+              <i class="bi bi-pie-chart-fill text-warning me-1"></i> Estado de Reservas
+            </h2>
+            <span class="badge bg-light text-dark border">En Vivo</span>
+          </div>
+          <div class="chart-container-wrapper d-flex align-items-center justify-content-center">
+            <canvas #statusCanvas></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Últimos Movimientos Registrados con Buscador Dinámico -->
+      <div class="miyabi-card-table">
+        <div class="miyabi-card-header">
+          <h2 class="miyabi-card-title">
+            <i class="bi bi-clock-history me-2"></i> Últimos Movimientos Registrados
+          </h2>
+          <div class="d-flex align-items-center gap-3">
+            <div class="table-search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" [(ngModel)]="searchQuery" (input)="filterMovements()" placeholder="Buscar por código, cliente..." />
+            </div>
+            <a routerLink="/admin/reports" class="btn-primary-ryokan" style="padding: 6px 14px; font-size: 12px;">
+              Ver Habitaciones →
+            </a>
+          </div>
+        </div>
+
+        <table class="miyabi-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Número</th>
-              <th>Piso</th>
-              <th>Tipo</th>
-              <th>Precio Base</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th>CÓDIGO</th>
+              <th>CLIENTE / HUÉSPED</th>
+              <th>HABITACIÓN</th>
+              <th>ESTANCIA</th>
+              <th>TOTAL ABONADO</th>
+              <th>ESTADO OPERATIVO</th>
             </tr>
           </thead>
           <tbody>
-            @for (room of rooms; track room.idHabitacion) {
+            @for (item of filteredReservations; track item.idReserva) {
               <tr>
-                <td>#{{ room.idHabitacion }}</td>
-                <td><strong>Hab. {{ room.roomNumber }}</strong></td>
-                <td>Piso {{ room.floor }}</td>
-                <td>{{ room.roomType.nameType }}</td>
-                <td>S/ {{ room.roomType.basePrice | number:'1.2-2' }}</td>
                 <td>
-                  <span class="status-badge" [ngClass]="(room.state || '').toLowerCase()">{{ room.state }}</span>
+                  <span class="code-identifier">{{ item.reservationCode || 'RES-2026-00' + item.idReserva }}</span>
                 </td>
                 <td>
-                  <button class="btn-action edit" (click)="openEditModal(room)">Editar</button>
+                  <strong>{{ item.guest?.names || 'Francisco' }} {{ item.guest?.surnames || 'Aravena Toledo' }}</strong>
+                </td>
+                <td>Hab. {{ item.room?.roomNumber || '202' }}</td>
+                <td>{{ item.entryDate }} al {{ item.departureDate }}</td>
+                <td class="price-tabular">S/ {{ item.totalPay | number:'1.2-2' }}</td>
+                <td>
+                  <span class="miyabi-badge" [ngClass]="getBadgeClass(item.state)">
+                    {{ item.state }}
+                  </span>
                 </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
-
-      <!-- Modal Edición / Creación -->
-      @if (showModal) {
-        <div class="modal-overlay">
-          <div class="modal-card">
-            <h3>{{ isEditMode ? 'Editar Habitación' : 'Registrar Habitación' }}</h3>
-            <form (ngSubmit)="saveRoom()">
-              <div class="form-group">
-                <label>Número de Habitación</label>
-                <input type="text" [(ngModel)]="currentRoom.roomNumber" name="roomNumber" required />
-              </div>
-              <div class="form-group">
-                <label>Piso</label>
-                <input type="number" [(ngModel)]="currentRoom.floor" name="floor" required />
-              </div>
-              <div class="form-group">
-                <label>Estado</label>
-                <select [(ngModel)]="currentRoom.state" name="state">
-                  <option value="Available">Available (Disponible)</option>
-                  <option value="Occupied">Occupied (Ocupado)</option>
-                  <option value="Cleaning">Cleaning (Limpieza)</option>
-                  <option value="Maintenance">Maintenance (Mantenimiento)</option>
-                </select>
-              </div>
-              <div class="modal-actions">
-                <button type="button" class="btn-secondary-ryokan" (click)="showModal = false">Cancelar</button>
-                <button type="submit" class="btn-primary-ryokan">Guardar Cambios</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      }
-    </div>
+    </main>
   `,
   styles: [`
-    .admin-dashboard {
-      padding-top: 120px;
-    }
-    .admin-header {
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
       margin-bottom: 30px;
     }
-    .admin-header h2 {
-      font-size: 32px;
-      margin-top: 8px;
+    @media (max-width: 1100px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    .metrics-grid {
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+    }
+    .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: 2fr 1fr;
       gap: 20px;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
-    .metric-card {
-      background: white;
-      border: 1px solid var(--color-border);
-      padding: 25px;
-      border-radius: 4px;
-      box-shadow: var(--shadow-subtle);
+    @media (max-width: 990px) {
+      .charts-grid { grid-template-columns: 1fr; }
     }
-    .metric-card h4 {
-      font-size: 13px;
-      color: var(--color-ibushi);
-      font-family: var(--font-sans);
-    }
-    .metric-value {
-      font-size: 32px;
-      font-weight: 700;
-      font-family: var(--font-serif);
-      margin-top: 10px;
-      display: block;
-    }
-    .color-matsu { color: var(--color-matsu); }
-    .color-enji { color: var(--color-enji); }
-    .admin-section {
-      background: white;
-      border: 1px solid var(--color-border);
-      padding: 30px;
-      border-radius: 4px;
-    }
-    .section-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-    }
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .admin-table th, .admin-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--color-border);
-      text-align: left;
-      font-size: 13px;
-    }
-    .admin-table th {
-      background: var(--surface);
-      font-weight: 600;
-    }
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 2px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .status-badge.available { background: rgba(46,59,50,0.1); color: var(--color-matsu); }
-    .status-badge.occupied { background: rgba(140,29,39,0.1); color: var(--color-enji); }
-    .status-badge.cleaning { background: rgba(217,130,43,0.1); color: #A35A12; }
-    .btn-action {
-      background: none;
-      border: 1px solid var(--color-sumi);
-      padding: 4px 10px;
-      font-size: 11px;
-      cursor: pointer;
-      border-radius: 2px;
-    }
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 1200;
-    }
-    .modal-card {
-      background: white;
-      padding: 30px;
-      border-radius: 4px;
-      width: 420px;
-    }
-    .modal-card h3 { margin-bottom: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 12px; margin-bottom: 6px; font-weight: 600; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #CCC; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
   `]
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, AfterViewInit {
   private roomService = inject(RoomService);
   private reservationService = inject(ReservationService);
 
+  @ViewChild('revenueCanvas') revenueCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('statusCanvas') statusCanvas!: ElementRef<HTMLCanvasElement>;
+
   rooms: Room[] = [];
   reservations: Reservation[] = [];
-  activeReservationsCount = 0;
-  totalRevenue = 0;
-
-  showModal = false;
-  isEditMode = false;
-  currentRoom: Partial<Room> = {};
+  filteredReservations: Reservation[] = [];
+  searchQuery = '';
+  activeTab = 'dashboard';
 
   ngOnInit() {
     this.loadData();
+  }
+
+  ngAfterViewInit() {
+    this.initCharts();
   }
 
   loadData() {
@@ -233,7 +279,10 @@ export class AdminDashboardComponent implements OnInit {
         this.rooms = [
           { idHabitacion: 101, roomNumber: '101', floor: 1, state: 'Available', roomType: mockType },
           { idHabitacion: 102, roomNumber: '102', floor: 1, state: 'Occupied', roomType: mockType },
-          { idHabitacion: 103, roomNumber: '103', floor: 2, state: 'Cleaning', roomType: mockType }
+          { idHabitacion: 103, roomNumber: '103', floor: 2, state: 'Cleaning', roomType: mockType },
+          { idHabitacion: 201, roomNumber: '201', floor: 2, state: 'Available', roomType: mockType },
+          { idHabitacion: 202, roomNumber: '202', floor: 2, state: 'Occupied', roomType: mockType },
+          { idHabitacion: 301, roomNumber: '301', floor: 3, state: 'Available', roomType: mockType }
         ];
       }
     });
@@ -241,39 +290,105 @@ export class AdminDashboardComponent implements OnInit {
     this.reservationService.getAllReservations().subscribe({
       next: (data) => {
         this.reservations = data;
-        this.activeReservationsCount = data.filter(r => r.state === 'Confirmed' || r.state === 'CheckedIn').length;
-        this.totalRevenue = data.reduce((acc, r) => acc + (r.totalPay || 0), 0);
+        this.filteredReservations = [...data];
       },
       error: () => {
-        this.activeReservationsCount = 4;
-        this.totalRevenue = 3850;
+        this.reservations = [
+          { idReserva: 1, reservationCode: 'RES-582000', entryDate: '2026-07-01', departureDate: '2026-07-14', state: 'Pending', totalPay: 14625000, guest: { names: 'Francisco', surnames: 'Aravena Toledo', email: '', documentType: 'DNI', documentNumber: '' } },
+          { idReserva: 2, reservationCode: 'RES-2026-0042', entryDate: '2026-08-01', departureDate: '2026-08-05', state: 'Confirmed', totalPay: 180000, guest: { names: 'Rodrigo', surnames: 'Lombardi Da Silva', email: '', documentType: 'DNI', documentNumber: '' } },
+          { idReserva: 3, reservationCode: 'RES-2026-0043', entryDate: '2026-08-10', departureDate: '2026-08-12', state: 'Confirmed', totalPay: 90000, guest: { names: 'Guilherme', surnames: 'Oliviera Santos', email: '', documentType: 'DNI', documentNumber: '' } }
+        ];
+        this.filteredReservations = [...this.reservations];
       }
     });
   }
 
-  openCreateModal() {
-    this.isEditMode = false;
-    this.currentRoom = { state: 'Available', floor: 1 };
-    this.showModal = true;
+  filterMovements() {
+    const q = this.searchQuery.toLowerCase();
+    this.filteredReservations = this.reservations.filter(r =>
+      !q ||
+      (r.reservationCode && r.reservationCode.toLowerCase().includes(q)) ||
+      (r.guest && (r.guest.names.toLowerCase().includes(q) || r.guest.surnames.toLowerCase().includes(q)))
+    );
   }
 
-  openEditModal(room: Room) {
-    this.isEditMode = true;
-    this.currentRoom = { ...room };
-    this.showModal = true;
+  getBadgeClass(state?: string): string {
+    switch (state?.toLowerCase()) {
+      case 'confirmed':
+      case 'checkedin':
+        return 'badge-confirmed';
+      case 'pending':
+        return 'badge-pending';
+      case 'cancelled':
+        return 'badge-cancelled';
+      default:
+        return 'badge-confirmed';
+    }
   }
 
-  saveRoom() {
-    if (this.isEditMode && this.currentRoom.idHabitacion) {
-      this.roomService.updateRoom(this.currentRoom.idHabitacion, this.currentRoom as Room).subscribe({
-        next: () => { this.showModal = false; this.loadData(); },
-        error: () => { this.showModal = false; }
-      });
-    } else {
-      this.roomService.createRoom(this.currentRoom as Room).subscribe({
-        next: () => { this.showModal = false; this.loadData(); },
-        error: () => { this.showModal = false; }
-      });
+  initCharts() {
+    if (this.revenueCanvas) {
+      const ctx = this.revenueCanvas.nativeElement.getContext('2d');
+      if (ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(140, 29, 39, 0.35)');
+        gradient.addColorStop(1, 'rgba(140, 29, 39, 0.0)');
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago'],
+            datasets: [{
+              label: 'Ingresos (S/)',
+              data: [4000, 5800, 7000, 6400, 8900, 9500, 11000, 12800],
+              borderColor: '#8C1D27',
+              borderWidth: 3,
+              backgroundColor: gradient,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: '#8C1D27',
+              pointRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: (v) => 'S/ ' + v } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+    }
+
+    if (this.statusCanvas) {
+      const ctx = this.statusCanvas.nativeElement.getContext('2d');
+      if (ctx) {
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Confirmadas', 'Pendientes', 'Canceladas'],
+            datasets: [{
+              data: [36, 1, 3],
+              backgroundColor: ['#2E3B32', '#C5A059', '#8C1D27'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { font: { family: 'Plus Jakarta Sans', size: 12 }, usePointStyle: true, padding: 20 }
+              }
+            },
+            cutout: '72%'
+          }
+        });
+      }
     }
   }
 }
