@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ============================================================
+     PÁGINA: AMENIDADES (pages/Amenities.html)
+     Amenidades de Yakushiyama y Selección Artesanal Ryokan
+     ============================================================ -->
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Miyabi | Amenidades de Yakushiyama</title>
+	<!-- Estilos globales y de sección -->
+	<link rel="stylesheet" th:href="@{/css/base/global.css}">
+	<link rel="stylesheet" th:href="@{/css/pages/Facilities.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/sections.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/scroll-indicator.css}">
+</head>
+
+<body>
+
+	<!-- Navbar global -->
+	<div th:replace="~{fragments/layout/components :: navbar}"></div>
+
+	<!-- Indicador de scroll lateral -->
+	<div th:replace="~{fragments/scroll-indicator :: scroll-indicator('Amenidades')}"></div>
+
+	<main class="facilities-page miyabi-container">
+
+		<!-- Sección Introductoria Amenidades -->
+		<div th:replace="~{fragments/sections :: fac-intro(
+	        'https://mukayu.com/wp-content/themes/corporate/img/amenity_jp.svg', 
+	        'Amenidades de Yakushiyama', 
+	        'Cada objeto presente en las habitaciones de MIYABI ha sido seleccionado o diseñado exclusivamente para nuestro ryokan. Desde los textiles de algodón orgánico y los yukatas tradicionales, hasta nuestros cosméticos botánicos elaborados con agua del manantial termal y extractos de plantas autóctonas.'
+	    )}"></div>
+
+		<!-- Sección 1: Cosmética Botánica Orgánica -->
+		<div th:replace="~{fragments/sections :: fac-section(
+	        'Cosmética Botánica', 
+	        'Línea de Baño Botánica Yakushiyama', 
+	        'Nuestros productos de higiene y cuidado personal son 100% biodegradables y formulados a base de aceites esenciales de cedro japonés, menta de montaña y camelia. Diseñados para nutrir la piel respetando la pureza del entorno natural.', 
+	        ${ {'https://mukayu.com/wp-content/themes/corporate/img/index/amenity_img.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/lob_img_01.jpg'} },
+	        null, 
+	        null
+	    )}"></div>
+
+		<!-- Sección 2: Vestimenta y Ceremonia del Té en Habitación -->
+		<div th:replace="~{fragments/sections :: fac-section(
+			'Vestimenta & Ritual', 
+			'Yukatas, Calzado de Madera y Juego de Matcha', 
+			'Disfrute de la comodidad de nuestros yukatas de lino y zouri de madera tradicional durante su estancia. Cada suite cuenta además con un set de cerámica artesanal de Kutani y té verde matcha recién molido para su deleite privado.', 
+			${ {'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_02.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/lob_img_03.jpg'} },
+			'Reservar Habitación', 
+			'/rooms'
+		)}"></div>
+
+	</main>
+
+	<!-- Footer global -->
+	<div th:replace="~{fragments/layout/components :: footer}"></div>
+
+	<!-- Scripts de interacción -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+	<script th:src="@{/js/base/global.js}"></script>
+
+</body>
+
+</html>

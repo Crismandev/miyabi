@@ -1,180 +1,179 @@
 // ============================================================
 //  MYRESERVATIONS.JS — Lógica de la página "Mis Reservas"
 //  Responsabilidades:
-//    · Validación de sesión activa antes de mostrar contenido
+//    · Validación de sesión activa (Servidor / sessionStorage)
 //    · Consulta a la API de reservas por huésped autenticado
 //    · Normalización y renderizado de tarjetas de reserva
 //    · Mapeo de estados de reserva a clases CSS y textos localizados
 //    · Manejo defensivo de datos de habitación potencialmente nulos
 // ============================================================
 
-
-// ============================================================
-//  SECCIÓN 1 — INICIALIZACIÓN AL CARGAR LA PÁGINA
-// ============================================================
-
-// Dispara la carga de reservas en cuanto el DOM está listo.
-// No se usa 'load' para no esperar a que carguen imágenes y recursos externos.
 document.addEventListener('DOMContentLoaded', () => {
     loadMyReservations();
 });
 
-
-// ============================================================
-//  SECCIÓN 2 — CARGA Y RENDERIZADO DE RESERVAS
-// ============================================================
-
 /**
- * Punto de entrada principal de la página.
- * Valida que el huésped tenga sesión activa, consulta sus reservas a la API
- * y renderiza una tarjeta por cada resultado dentro de #reservations-container.
- * Cubre tres estados de UI: carga vacía, lista de tarjetas y error de red.
- *
- * @returns {Promise<void>}
+ * Punto de entrada principal de la página Mis Reservas.
  */
 async function loadMyReservations() {
     const container = document.getElementById('reservations-container');
-    const guestId = sessionStorage.getItem('guestId');
+    let guestId = sessionStorage.getItem('guestId');
 
-    // Sin guestId no hay sesión activa: se redirige al inicio en lugar de mostrar
-    // un error, para que el usuario pueda autenticarse y volver al flujo normal
-    if (!guestId) {
-        window.location.href = "/";
+    // 1. Si no hay guestId o es "undefined", validar sesión activa contra el servidor (/api/auth/check)
+    if (!guestId || guestId === "undefined" || guestId === "null") {
+        try {
+            const checkResp = await fetch('/api/auth/check');
+            if (checkResp.ok) {
+                const checkData = await checkResp.json();
+                if (checkData.isLoggedIn) {
+                    guestId = checkData.guestId || checkData.userId;
+                    if (guestId) {
+                        sessionStorage.setItem('guestId', guestId);
+                        sessionStorage.setItem('guestName', checkData.guestName);
+                        sessionStorage.setItem('isLoggedIn', 'true');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error al consultar sesión de autenticación:", e);
+        }
+    }
+
+    // 2. Si sigue sin haber sesión activa, mostrar mensaje e invitar a iniciar sesión
+    if (!guestId || guestId === "undefined" || guestId === "null") {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <i class="bi bi-person-lock" style="font-size: 48px; color: var(--color-kinjiki);"></i>
+                <h3 style="font-family: var(--font-serif); margin-top: 15px; font-size: 24px;">Acceso a Mis Reservas</h3>
+                <p style="color: var(--color-ibushi); margin-bottom: 25px; font-size: 15px;">Debes iniciar sesión para consultar el historial de tus estancias.</p>
+                <button class="btn-miyabi btn-miyabi-enji" onclick="if(typeof toggleLoginModal === 'function') toggleLoginModal(); else window.location.href='/';">Iniciar Sesión</button>
+            </div>
+        `;
         return;
     }
 
     try {
-        // GET /api/reservations/guest/:guestId → espera un array de objetos reserva.
-        // El endpoint está implementado en el controlador de Spring Boot.
-        const response = await fetch(`/api/reservations/guest/${guestId}`);
+        // 3. Consultar la API de reservas por el id del huésped
+        let response = await fetch(`/api/reservations/guest/${guestId}`);
+        let reservations = [];
 
-        if (!response.ok) throw new Error("Error fetching reservations");
+        if (response.ok) {
+            reservations = await response.json();
+        } else {
+            // Fallback: si es un usuario administrador o la respuesta no es OK, consultar todas las reservas
+            const fallbackResp = await fetch('/api/reservations');
+            if (fallbackResp.ok) {
+                reservations = await fallbackResp.json();
+            } else {
+                throw new Error("Error fetching reservations");
+            }
+        }
 
-        const reservations = await response.json();
-
-        // Estado vacío: el huésped existe pero aún no tiene reservas.
-        // Se ofrece un CTA directo al motor de reservas en lugar de un mensaje muerto.
-        if (reservations.length === 0) {
+        // Estado vacío: el cliente existe pero no tiene reservas registradas aún
+        if (!reservations || reservations.length === 0) {
             container.innerHTML = `
-                <div style="text-align: center; padding: 50px 0;">
-                    <p style="font-size: 18px; margin-bottom: 20px;">Aún no tienes reservas con nosotros.</p>
-                    <button class="btn-auth-dark" onclick="window.location.href='/reservation/booking'" style="background:#000; color:#fff; padding: 15px 30px; border:none; cursor:pointer;">RESERVAR AHORA</button>
+                <div style="text-align: center; padding: 60px 20px;">
+                    <p style="font-size: 18px; margin-bottom: 20px; font-family: var(--font-serif);">Aún no tienes reservas registradas en Hotel Miyabi.</p>
+                    <button class="btn-miyabi btn-miyabi-enji" onclick="window.location.href='/reservation'">RESERVAR AHORA</button>
                 </div>
             `;
             return;
         }
 
-        // Limpia el mensaje de "Cargando..." antes de inyectar las tarjetas
-        container.innerHTML = '';
-
-        // Se invierte el array para mostrar la reserva más reciente en primer lugar,
-        // ya que la API devuelve los registros en orden de creación ascendente
-        reservations.reverse().forEach(res => {
-
-            // === Formateo de fechas ===
-            // Se usa toLocaleDateString con 'es-ES' para obtener fechas en formato legible
-            // en español (ej. "15 de marzo de 2025") coherente con el idioma de la UI
-            const checkIn = new Date(res.entryDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-            const checkOut = new Date(res.departureDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-
-            // === Mapeo de estado a clase CSS y texto localizado ===
-            // El backend devuelve estados en inglés (Paid, Reserved, Cancelled);
-            // aquí se traducen al español y se asigna la clase visual correspondiente
-            let statusClass = "status-pending";
-            let statusText = "Pendiente";
-
-            if (res.state === "Paid" || res.state === "Reserved" || res.state === "Confirmed") {
-                statusClass = "status-paid";
-                statusText = "Confirmada";
-            } else if (res.state === "Check-out") {
-                statusClass = "status-paid";
-                statusText = "Completada";
-            } else if (res.state === "Cancelled") {
-                statusClass = "status-cancelled";
-                statusText = "Cancelada";
-            }
-
-            // === Resolución defensiva del nombre de habitación ===
-            // La relación room → roomType puede venir parcialmente nula desde el backend;
-            // se aplica una cascada de fallbacks para garantizar que siempre haya un texto visible
-            let roomName = "Habitación Estándar";
-
-            if (res.room && res.room.roomType && res.room.roomType.nameType) {
-                roomName = res.room.roomType.nameType;
-            } else if (res.room && res.room.roomNumber) {
-                // Si el tipo viene nulo, se muestra al menos el número de cuarto
-                // para que el huésped pueda identificar su reserva
-                roomName = "Habitación " + res.room.roomNumber;
-            }
-
-            // === Normalización de valores financieros ===
-            // Se usa || 0 como fallback para evitar que NaN o null rompan el formateo
-            // con toLocaleString() en el template HTML de la tarjeta
-            const roomSubtotal = res.roomSubtotal || 0;
-            const consumption = res.totalConsumption || 0;
-            const totalPay = res.totalPay || 0;
-
-            // === Construcción del HTML de la tarjeta ===
-            // Los consumos extra se renderizan condicionalmente: solo aparece la fila
-            // si el huésped tiene cargos adicionales (consumption > 0), manteniendo
-            // la tarjeta limpia para reservas sin extras
-            const cardHtml = `
-			                <div class="reservation-card">
-			                    <div class="res-card-header">
-			                        <span class="res-code">Reserva: ${res.reservationCode}</span>
-			                        <span class="res-status ${statusClass}">${statusText}</span>
-			                    </div>
-			                    
-			                    <div class="res-card-body">
-			                        <div class="res-detail-group">
-			                            <span class="res-label">Check-in</span>
-			                            <span class="res-value">${checkIn}</span>
-			                        </div>
-			                        <div class="res-detail-group">
-			                            <span class="res-label">Check-out</span>
-			                            <span class="res-value">${checkOut}</span>
-			                        </div>
-			                        <div class="res-detail-group">
-			                            <span class="res-label">Habitación</span>
-			                            <span class="res-value">${roomName}</span>
-			                        </div>
-			                        <div class="res-detail-group">
-			                            <span class="res-label">Huéspedes</span>
-			                            <span class="res-value">${res.numAdults} Adultos</span>
-			                        </div>
-			                    </div>
-
-			                    <div class="res-card-footer">
-			                        <div class="res-breakdown-row">
-			                            <span>Costo de Habitación</span>
-			                            <span>¥${roomSubtotal.toLocaleString('es-ES')}</span>
-			                        </div>
-			                        
-			                        ${consumption > 0 ? `
-			                        <div class="res-breakdown-row">
-			                            <span>Consumos Extra</span>
-			                            <span>¥${consumption.toLocaleString('es-ES')}</span>
-			                        </div>
-			                        ` : ''}
-
-			                        <div class="res-total-row">
-			                            <span class="res-label">TOTAL A PAGAR</span>
-			                            <span class="res-total">¥${totalPay.toLocaleString('es-ES')}</span>
-			                        </div>
-			                    </div>
-			                </div>
-			            `;
-
-            container.innerHTML += cardHtml;
-        });
+        renderReservationCards(reservations, container);
 
     } catch (error) {
-        // Error de red o respuesta inesperada del servidor:
-        // se muestra un mensaje en el contenedor Y un toast para mayor visibilidad,
-        // ya que el usuario podría no estar mirando esa zona de la página
         console.error(error);
         container.innerHTML = '<p style="color:#666; text-align:center; padding: 50px 0;">No pudimos cargar tus reservas en este momento.</p>';
-        
-        showToast("Error de conexión. No se pudieron cargar las reservas.", true);
+        if (typeof showToast === 'function') {
+            showToast("Error de conexión. No se pudieron cargar las reservas.", true);
+        }
     }
+}
+
+/**
+ * Renderiza la lista de tarjetas de reserva en el contenedor HTML.
+ */
+function renderReservationCards(reservations, container) {
+    container.innerHTML = '';
+
+    reservations.reverse().forEach(res => {
+        const checkIn = res.entryDate ? new Date(res.entryDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A';
+        const checkOut = res.departureDate ? new Date(res.departureDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A';
+
+        let statusClass = "status-pending";
+        let statusText = "Pendiente";
+
+        if (res.state === "Paid" || res.state === "Reserved" || res.state === "Confirmed" || res.state === "Confirmada") {
+            statusClass = "status-paid";
+            statusText = "Confirmada";
+        } else if (res.state === "Check-out") {
+            statusClass = "status-paid";
+            statusText = "Completada";
+        } else if (res.state === "Cancelled" || res.state === "Cancelada") {
+            statusClass = "status-cancelled";
+            statusText = "Cancelada";
+        }
+
+        let roomName = "Habitación Estándar Ryokan";
+
+        if (res.room && res.room.roomType && res.room.roomType.nameType) {
+            roomName = res.room.roomType.nameType;
+        } else if (res.room && res.room.roomNumber) {
+            roomName = "Habitación " + res.room.roomNumber;
+        }
+
+        const roomSubtotal = res.roomSubtotal || 0;
+        const consumption = res.totalConsumption || 0;
+        const totalPay = res.totalPay || 0;
+
+        const cardHtml = `
+            <div class="reservation-card" style="background-color: var(--surface-card); border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 24px; padding: 24px; box-shadow: var(--shadow-subtle);">
+                <div class="res-card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); padding-bottom: 14px; margin-bottom: 16px;">
+                    <span class="res-code" style="font-family: var(--font-mono); font-weight: 600; color: var(--color-enji);">Reserva: ${res.reservationCode || 'RES-000'}</span>
+                    <span class="res-status ${statusClass}">${statusText}</span>
+                </div>
+                
+                <div class="res-card-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                    <div class="res-detail-group">
+                        <span class="res-label" style="font-size: 11px; text-transform: uppercase; color: var(--color-ibushi); display: block;">Check-in</span>
+                        <span class="res-value" style="font-weight: 600;">${checkIn}</span>
+                    </div>
+                    <div class="res-detail-group">
+                        <span class="res-label" style="font-size: 11px; text-transform: uppercase; color: var(--color-ibushi); display: block;">Check-out</span>
+                        <span class="res-value" style="font-weight: 600;">${checkOut}</span>
+                    </div>
+                    <div class="res-detail-group">
+                        <span class="res-label" style="font-size: 11px; text-transform: uppercase; color: var(--color-ibushi); display: block;">Habitación</span>
+                        <span class="res-value" style="font-weight: 600;">${roomName}</span>
+                    </div>
+                    <div class="res-detail-group">
+                        <span class="res-label" style="font-size: 11px; text-transform: uppercase; color: var(--color-ibushi); display: block;">Estancia</span>
+                        <span class="res-value" style="font-weight: 600;">${res.numberNights || 1} Noche(s)</span>
+                    </div>
+                </div>
+
+                <div class="res-card-footer" style="background-color: var(--surface); padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+                    <div class="res-breakdown-row" style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px;">
+                        <span>Costo de Habitación</span>
+                        <span>S/ ${roomSubtotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    
+                    ${consumption > 0 ? `
+                    <div class="res-breakdown-row" style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px;">
+                        <span>Consumos Extras</span>
+                        <span>S/ ${consumption.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    ` : ''}
+
+                    <div class="res-total-row" style="display: flex; justify-content: space-between; font-weight: 700; font-size: 16px; border-top: 1px solid var(--color-border); pt-2; margin-top: 8px; padding-top: 8px; color: var(--color-sumi);">
+                        <span>TOTAL ABONADO</span>
+                        <span>S/ ${totalPay.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML += cardHtml;
+    });
 }

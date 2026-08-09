@@ -2,148 +2,189 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Miyabi | Gestión de Usuarios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miyabi | Gestión de Personal & Usuarios</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+    <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Hojas de estilo Ryokan globales y admin -->
+    <link rel="stylesheet" th:href="@{/css/base/global.css}">
+    <link rel="stylesheet" th:href="@{/css/base/admin.css}">
 </head>
-<body class="bg-light">
+<body class="miyabi-admin-body">
 
-	<nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
-	    <div class="container">
-	        <a th:href="@{/admin/dashboard}" class="navbar-brand fw-bold text-decoration-none text-white">
-	            <i class="bi bi-building"></i> MIYABI Admin
-	        </a>
-	        
-	        <div class="d-flex align-items-center">
-	            <a th:href="@{/admin/dashboard}" class="btn btn-outline-light btn-sm me-2">
-	                <i class="bi bi-speedometer2"></i> Dashboard
-	            </a>
-	            <a th:href="@{/admin/rooms}" class="btn btn-outline-light btn-sm me-2">
-	                <i class="bi bi-door-open"></i> Habitaciones
-	            </a>
-	            <a th:href="@{/admin/room-types}" class="btn btn-outline-light btn-sm me-2">
-	                <i class="bi bi-tags"></i> Tarifas
-	            </a>
-	            <a th:href="@{/admin/users}" class="btn btn-outline-light btn-sm me-2">
-	                <i class="bi bi-people"></i> Personal
-	            </a>
-	            
-	            <div class="vr mx-2 text-white opacity-50"></div>
-	            
-	            <a href="/" class="btn btn-sm btn-light">
-	                <i class="bi bi-box-arrow-up-right"></i> Ver Web
-	            </a>
-	        </div>
-	    </div>
-	</nav>
+    <!-- Navbar Administrativa Reutilizable Ryokan -->
+    <div th:replace="~{fragments/admin-navbar :: adminNavbar('users')}"></div>
 
-    <div class="container">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i> Personal del Hotel</h5>
-                <button class="btn btn-primary" onclick="prepareNewUser()">
-                    <i class="bi bi-person-plus"></i> Nuevo Usuario
+    <!-- Contenedor Principal Personal -->
+    <main class="miyabi-admin-container">
+        
+        <!-- Encabezado de Página -->
+        <div class="miyabi-page-header">
+            <div>
+                <h1 class="miyabi-page-title">Personal y Accesos Ryokan</h1>
+                <p class="miyabi-page-subtitle">Administración de usuarios de sistema, asignación de roles operativos y control de cuentas.</p>
+            </div>
+            <div>
+                <button class="btn-miyabi btn-miyabi-enji" onclick="prepareNewUser()">
+                    <i class="bi bi-person-plus-fill"></i> Nuevo Personal
                 </button>
             </div>
-            <div class="card-body">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+        </div>
+
+        <!-- Tabla Ryokan de Personal -->
+        <div class="miyabi-card-table">
+            <div class="miyabi-card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <h2 class="miyabi-card-title">
+                        <i class="bi bi-people me-2" style="color: var(--color-asagi);"></i>Directorio de Personal Registrado
+                    </h2>
+                    <span class="miyabi-badge badge-active" th:text="${#lists.size(listUsers)} + ' Miembros'">0 Miembros</span>
+                </div>
+
+                <div class="table-search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="userSearchInput" placeholder="Buscar por nombre, correo o rol...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="miyabi-table" id="usersTable">
+                    <thead>
                         <tr>
-                            <th>Nombre Completo</th>
-                            <th>Email / Usuario</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
+                            <th>Miembro de Personal</th>
+                            <th>Correo / Usuario</th>
+                            <th>Rol Operativo</th>
+                            <th>Estado de Cuenta</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="u : ${listUsers}">
                             <td>
-                                <strong th:text="${u.names} + ' ' + ${u.surnames}">Nombre</strong>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" 
+                                         style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--color-enji) 0%, var(--color-kinjiki) 100%); font-family: var(--font-serif); font-size: 17px;">
+                                        <span th:text="${#strings.substring(u.names, 0, 1)}">M</span>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-capitalize fs-6 text-dark" th:text="${u.names} + ' ' + ${u.surnames}">Nombre Completo</div>
+                                        <div class="text-muted small">ID #<span th:text="${u.idUsuario}">1</span></div>
+                                    </div>
+                                </div>
                             </td>
-                            <td th:text="${u.email}">admin@hotel.com</td>
                             <td>
-                                <span class="badge bg-dark" th:text="${u.rol?.nameRol}">Rol</span>
+                                <span class="code-identifier fs-6" th:text="${u.email}">admin@hotel.com</span>
                             </td>
                             <td>
-                                <span th:class="${u.state == 1 ? 'badge bg-success' : 'badge bg-danger'}">
+                                <span class="miyabi-badge badge-active" th:text="${u.rol?.nameRol}">Administrador</span>
+                            </td>
+                            <td>
+                                <span th:class="${u.state == 1 ? 'miyabi-badge badge-confirmed' : 'miyabi-badge badge-cancelled'}">
                                     [[${u.state == 1 ? 'Activo' : 'Inactivo'}]]
                                 </span>
                             </td>
                             <td class="text-end">
-								<button class="btn btn-sm btn-outline-primary me-1" 
-								        th:onclick="'editUser(' + ${u.idUsuario} + ')'">
-								    <i class="bi bi-pencil"></i>
-								</button>
-                                <button class="btn btn-sm btn-outline-danger" th:onclick="'deleteUser(' + ${u.idUsuario} + ')'">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="btn-group">
+                                    <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm me-1" th:onclick="'editUser(' + ${u.idUsuario} + ')'" title="Editar Personal">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </button>
+                                    <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" th:onclick="'deleteUser(' + ${u.idUsuario} + ')'" title="Dar de baja">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(listUsers)}">
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-people fs-2 d-block mb-2 text-muted opacity-50"></i>
+                                No hay usuarios registrados en el sistema.
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
 
+    </main>
+
+    <!-- Modal Ryokan para Crear / Editar Usuario -->
     <div class="modal fade" id="modalUser" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalTitle">Registrar Nuevo Personal</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content miyabi-modal-content">
+                <div class="modal-header miyabi-modal-header">
+                    <h5 class="modal-title miyabi-modal-title" id="modalTitle">Registrar Nuevo Personal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="formUser">
-                    <div class="modal-body row g-3">
+                    <div class="modal-body miyabi-modal-body row g-3">
                         <input type="hidden" id="uId">
                         
                         <div class="col-md-6">
-                            <label class="form-label">Nombres</label>
-                            <input type="text" class="form-control" id="uNames" required>
+                            <label class="miyabi-form-label">Nombres</label>
+                            <input type="text" class="miyabi-form-control" id="uNames" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Apellidos</label>
-                            <input type="text" class="form-control" id="uSurnames" required>
+                            <label class="miyabi-form-label">Apellidos</label>
+                            <input type="text" class="miyabi-form-control" id="uSurnames" required>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">Email (Usuario)</label>
-                            <input type="email" class="form-control" id="uEmail" required>
+                            <label class="miyabi-form-label">Correo Electrónico (Usuario)</label>
+                            <input type="email" class="miyabi-form-control" id="uEmail" required>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="uPassword" placeholder="Dejar en blanco para no cambiar">
+                            <label class="miyabi-form-label">Contraseña</label>
+                            <input type="password" class="miyabi-form-control" id="uPassword" placeholder="Dejar en blanco para no modificar">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Asignar Rol</label>
-                            <select class="form-select" id="uRol" required>
-                                <option value="1">Administrator</option>
-                                <option value="2">Receptionist</option>
-                                <option value="3">Client</option>
+                            <label class="miyabi-form-label">Rol Operativo</label>
+                            <select class="miyabi-form-select" id="uRol" required>
+                                <option value="1">Administrador</option>
+                                <option value="2">Recepcionista</option>
+                                <option value="3">Cliente</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Estado</label>
-                            <select class="form-select" id="uState">
+                            <label class="miyabi-form-label">Estado de Cuenta</label>
+                            <select class="miyabi-form-select" id="uState">
                                 <option value="1">Activo</option>
                                 <option value="0">Inactivo</option>
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary" id="btnSave">Guardar Usuario</button>
+                    <div class="modal-footer miyabi-modal-footer">
+                        <button type="button" class="btn-miyabi btn-miyabi-outline" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-miyabi btn-miyabi-enji" id="btnSave">Guardar Usuario</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Lógica JS Conservada para Operaciones REST & Buscador Dinámico -->
     <script th:inline="javascript">
         const modalElement = new bootstrap.Modal(document.getElementById('modalUser'));
         const formUser = document.getElementById('formUser');
 
-        // Función para limpiar el modal al crear uno nuevo
+        document.addEventListener('DOMContentLoaded', () => {
+            const userSearch = document.getElementById('userSearchInput');
+            if (userSearch) {
+                userSearch.addEventListener('keyup', () => {
+                    const value = userSearch.value.toLowerCase();
+                    const rows = document.querySelectorAll('#usersTable tbody tr');
+                    rows.forEach(row => {
+                        const text = row.innerText.toLowerCase();
+                        row.style.display = text.includes(value) ? '' : 'none';
+                    });
+                });
+            }
+        });
+
         function prepareNewUser() {
             document.getElementById('modalTitle').innerText = "Registrar Nuevo Personal";
             formUser.reset();
@@ -155,19 +196,16 @@
 		function editUser(id) {
 		    document.getElementById('modalTitle').innerText = 'Editar Personal';
 		    
-		    // Pedimos los datos actuales del usuario al servidor
 		    fetch('/api/users/' + id)
 		        .then(response => response.json())
 		        .then(data => {
-		            // Rellenamos el modal con lo que nos responda el "data"
 		            document.getElementById('uId').value = data.idUsuario;
 		            document.getElementById('uNames').value = data.names;
 		            document.getElementById('uSurnames').value = data.surnames;
 		            document.getElementById('uEmail').value = data.email;
-		            document.getElementById('uRol').value = data.rol?.idRol; // El ID del rol
+		            document.getElementById('uRol').value = data.rol?.idRol;
 		            document.getElementById('uState').value = data.state;
 		            
-		            // La contraseña no se carga por seguridad, se deja vacía
 		            document.getElementById('uPassword').value = "";
 		            document.getElementById('uPassword').required = false;
 		            
@@ -188,11 +226,9 @@
                 rol: { idRol: document.getElementById('uRol').value }
             };
 
-            // Solo incluimos la contraseña si se escribió algo (para no sobreescribirla con vacío al editar)
             const pass = document.getElementById('uPassword').value;
             if (pass) userData.password = pass;
 
-            // Decidimos si es POST o PUT
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/users/${id}` : '/api/users';
 

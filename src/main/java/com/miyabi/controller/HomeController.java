@@ -9,18 +9,12 @@ import com.miyabi.service.RoomTypeService;
 /**
  * Controlador MVC principal (Navegación Pública).
  * Se encarga de gestionar el enrutamiento de las páginas públicas del sitio web.
- * A diferencia de una API REST, este controlador devuelve vistas HTML (plantillas de Thymeleaf).
  */
 @Controller 
 public class HomeController {
 	
-    // Dependencia del servicio para acceder a los datos de los tipos de habitaciones
 	private final RoomTypeService roomTypeService;
 	
-    /**
-     * Constructor para la Inyección de Dependencias.
-     * Spring Boot instancia automáticamente el RoomTypeService.
-     */
 	public HomeController(RoomTypeService roomTypeService) {
         this.roomTypeService = roomTypeService;
     }
@@ -36,7 +30,7 @@ public class HomeController {
 
     /**
      * Endpoint GET: /facilities
-     * Carga la página informativa sobre las instalaciones del hotel (ej. áreas comunes, jardines).
+     * Carga la página informativa sobre las instalaciones del hotel.
      */
     @GetMapping("/facilities")
     public String facilities() {
@@ -45,7 +39,7 @@ public class HomeController {
 
     /**
      * Endpoint GET: /cuisine
-     * Carga la página dedicada a la experiencia gastronómica y restaurante del hotel.
+     * Carga la página dedicada a la experiencia gastronómica Kaiseki Horin.
      */
     @GetMapping("/cuisine")
     public String cuisine() {
@@ -53,22 +47,67 @@ public class HomeController {
     }
     
     /**
+     * Endpoint GET: /spa
+     * Carga la página del Spa Entei.
+     */
+    @GetMapping("/spa")
+    public String spa() {
+        return "pages/Spa";
+    }
+
+    /**
+     * Endpoint GET: /amenities
+     * Carga la página de Amenidades de Yakushiyama.
+     */
+    @GetMapping("/amenities")
+    public String amenities() {
+        return "pages/Amenities";
+    }
+
+    /**
+     * Endpoint GET: /experiences
+     * Carga la página de Experiencias Privadas Únicas.
+     */
+    @GetMapping("/experiences")
+    public String experiences() {
+        return "pages/Experiences";
+    }
+
+    /**
+     * Endpoint GET: /stay-offers
+     * Carga la página de Ofertas de Estancia & Paquetes.
+     */
+    @GetMapping("/stayOffers")
+    public String stayOffersOld() {
+        return "pages/StayOffers";
+    }
+
+    @GetMapping("/stay-offers")
+    public String stayOffers() {
+        return "pages/StayOffers";
+    }
+
+    /**
+     * Endpoint GET: /location
+     * Carga la página de Acceso & Ubicación.
+     */
+    @GetMapping("/location")
+    public String location() {
+        return "pages/Location";
+    }
+
+    /**
      * Endpoint GET: /rooms
      * Carga el catálogo público de habitaciones.
-     * @param model Objeto de Spring que actúa como puente para pasar datos desde el backend al frontend.
      */
     @GetMapping("/rooms")
     public String rooms(Model model) {
-        // Consulta todos los tipos de habitaciones en la base de datos (Japonesa, Zen, etc.)
-        // y los envía a la vista HTML bajo el nombre de variable "roomTypes".
-        // Thymeleaf usará esta variable para dibujar las tarjetas de habitaciones dinámicamente.
         model.addAttribute("roomTypes", roomTypeService.findAll());
         return "pages/Rooms"; 
     }
     
     /**
      * Endpoint GET: /reservation
-     * Carga la página introductoria de reservas (la que contiene las políticas de niños, grupos, etc.).
      */
     @GetMapping("/reservation")
     public String reservation() {
@@ -77,7 +116,6 @@ public class HomeController {
     
     /**
      * Endpoint GET: /register
-     * Carga el formulario para que un cliente nuevo pueda crear su cuenta.
      */
     @GetMapping("/register")
     public String showRegisterPage() {
@@ -86,7 +124,6 @@ public class HomeController {
     
     /**
      * Endpoint GET: /profile
-     * Carga el panel de control personal del cliente (donde gestionará sus datos y reservas).
      */
     @GetMapping("/profile")
     public String showProfilePage() {

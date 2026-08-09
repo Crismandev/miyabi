@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ============================================================
+     PÁGINA: EXPERIENCIAS (pages/Experiences.html)
+     Experiencias Privadas Únicas Ryokan
+     ============================================================ -->
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.5">
+	<title>Miyabi | Experiencias Privadas Únicas</title>
+	<!-- Estilos globales y de sección -->
+	<link rel="stylesheet" th:href="@{/css/base/global.css}">
+	<link rel="stylesheet" th:href="@{/css/pages/Facilities.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/sections.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/scroll-indicator.css}">
+</head>
+
+<body>
+
+	<!-- Navbar global -->
+	<div th:replace="~{fragments/layout/components :: navbar}"></div>
+
+	<!-- Indicador de scroll lateral -->
+	<div th:replace="~{fragments/scroll-indicator :: scroll-indicator('Experiencias')}"></div>
+
+	<main class="facilities-page miyabi-container">
+
+		<!-- Sección Introductoria Experiencias -->
+		<div th:replace="~{fragments/sections :: fac-intro(
+	        'https://mukayu.com/wp-content/themes/corporate/img/experience_jp.svg', 
+	        'Experiencias Privadas Únicas', 
+	        'En MIYABI invitamos a nuestros huéspedes a sumergirse en la cultura tradicional japonesa a través de vivencias íntimas y memorables: desde la milenaria ceremonia del té en nuestro salón privado, hasta sesiones matutinas de meditación Zazen frente al bosque sagrado.'
+	    )}"></div>
+
+		<!-- Sección 1: Ceremonia del Té Privada -->
+		<div th:replace="~{fragments/sections :: fac-section(
+	        'Ceremonia del Té', 
+	        'Ritual del Té (Chanoyu) con Maestro Té de Kaga', 
+	        'Guíado por un maestro de té experimentado en un salón tradicional de tatami. Aprenda el arte del silencio, la postura y la preparación artesanal del matcha servido con dulces de estación wagashi elaborados en la posada.', 
+	        ${ {'https://mukayu.com/wp-content/themes/corporate/img/index/experience_img.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/lob_img_02.jpg'} },
+	        'Reservar Experiencia', 
+	        '/reservation'
+	    )}"></div>
+
+		<!-- Sección 2: Meditación Zazen al Amanecer -->
+		<div th:replace="~{fragments/sections :: fac-section(
+			'Meditación Zazen', 
+			'Práctica Zazen & Yoga en la Terraza del Bosque', 
+			'Inicie el día purificando la mente con una sesión de meditación Zazen al salir el sol sobre el Monte Hakusan. Escuche el murmullo del viento sobre las copas de los cedros mientras alcanza un estado de calma profunda.', 
+			${ {'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_01.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_03.jpg'} },
+			'Consultar Disponibilidad', 
+			'/rooms'
+		)}"></div>
+
+	</main>
+
+	<!-- Footer global -->
+	<div th:replace="~{fragments/layout/components :: footer}"></div>
+
+	<!-- Scripts de interacción -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+	<script th:src="@{/js/base/global.js}"></script>
+
+</body>
+
+</html>

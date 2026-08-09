@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ============================================================
+     PÁGINA: SPA ENTEI (pages/Spa.html)
+     Experiencia de Sanación Termal y Botánica Medicinal Ryokan
+     ============================================================ -->
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Miyabi | Spa Entei & Onsen</title>
+	<!-- Estilos globales y de sección -->
+	<link rel="stylesheet" th:href="@{/css/base/global.css}">
+	<link rel="stylesheet" th:href="@{/css/pages/Facilities.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/sections.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/scroll-indicator.css}">
+</head>
+
+<body>
+
+	<!-- Navbar global -->
+	<div th:replace="~{fragments/layout/components :: navbar}"></div>
+
+	<!-- Indicador de scroll lateral -->
+	<div th:replace="~{fragments/scroll-indicator :: scroll-indicator('Spa Entei')}"></div>
+
+	<main class="facilities-page miyabi-container">
+
+		<!-- Sección Introductoria Spa -->
+		<div th:replace="~{fragments/sections :: fac-intro(
+	        'https://mukayu.com/wp-content/themes/corporate/img/spa_jp.svg', 
+	        'Spa Entei', 
+	        'El Spa Entei se nutre de las sagradas aguas termales del manantial de Yakushiyama y de la botánica medicinal milenaria de la región de Kaga. Ofrecemos tratamientos holísticos donde terapeutas expertos combinan técnicas orientales y occidentales para armonizar cuerpo, mente y espíritu.'
+	    )}"></div>
+
+		<!-- Sección 1: Baños Termales Onsen Privados -->
+		<div th:replace="~{fragments/sections :: fac-section(
+	        'Baños Onsen', 
+	        'Baños Termales Onsen al Aire Libre', 
+	        'Sumérjase en las aguas curativas cargadas de minerales volcánicos mientras contempla el cambio de estación en el Jardín del Bosque. Los baños al aire libre (Rotenburo) brindan una experiencia de aislamiento y relajación absoluta en contacto directo con la naturaleza.', 
+	        ${ {'https://mukayu.com/wp-content/themes/corporate/img/index/spa_img.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/lob_img_02.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_03.jpg'} },
+	        'Reservar Tratamiento', 
+	        '/reservation'
+	    )}"></div>
+
+		<!-- Sección 2: Botánica Curativa y Rituales de Hierbas -->
+		<div th:replace="~{fragments/sections :: fac-section(
+			'Rituales Botánicos', 
+			'Tratamientos de Hierbas Medicinales', 
+			'Cada terapia comienza con una consulta personalizada para seleccionar infusiones de hierbas recolectadas a mano en la ladera de la montaña. Masajes con aceites esenciales orgánicos, compresas calientes y exfoliantes con sales termales restauran la vitalidad del cuerpo.', 
+			${ {'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_01.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_04.jpg'} },
+			'Ver Tarifas de Spa', 
+			'/rooms'
+		)}"></div>
+
+	</main>
+
+	<!-- Footer global -->
+	<div th:replace="~{fragments/layout/components :: footer}"></div>
+
+	<!-- Scripts de interacción -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+	<script th:src="@{/js/base/global.js}"></script>
+
+</body>
+
+</html>

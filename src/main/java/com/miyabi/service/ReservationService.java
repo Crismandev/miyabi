@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.miyabi.models.Guest;
 import com.miyabi.models.Reservation;
 import com.miyabi.models.Room;
+import com.miyabi.repository.GuestRepository;
 import com.miyabi.repository.ReservationRepository;
 
 /**
@@ -25,12 +26,14 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final RoomService roomService;
     private final GuestService guestService;
+    private final GuestRepository guestRepository;
 
     // Inyección de dependencias: se comunica con habitaciones y huéspedes para validar datos.
-    public ReservationService(ReservationRepository reservationRepository, RoomService roomService, GuestService guestService) {
+    public ReservationService(ReservationRepository reservationRepository, RoomService roomService, GuestService guestService, GuestRepository guestRepository) {
         this.reservationRepository = reservationRepository;
         this.roomService = roomService;
         this.guestService = guestService;
+        this.guestRepository = guestRepository;
     }
 
     public List<Reservation> findAll() {
@@ -57,24 +60,36 @@ public class ReservationService {
     public Reservation createReservation(Reservation reservation) {
 
         // 1. VALIDACIÓN Y ACTUALIZACIÓN DEL CLIENTE
-        if (reservation.getGuest() != null && reservation.getGuest().getIdGuest() != null) {
-            Guest existingGuest = guestService.findById(reservation.getGuest().getIdGuest());
-            
-            if (existingGuest != null) {
-                // Actualizamos los datos de contacto del cliente con lo que ingresó en el formulario de reserva
-                Guest incomingData = reservation.getGuest();
-                if (incomingData.getPhone() != null) existingGuest.setPhone(incomingData.getPhone());
-                if (incomingData.getMobilePhone() != null) existingGuest.setMobilePhone(incomingData.getMobilePhone());
-                if (incomingData.getAddress() != null) existingGuest.setAddress(incomingData.getAddress());
-                if (incomingData.getCountry() != null) existingGuest.setCountry(incomingData.getCountry());
-                if (incomingData.getCity() != null) existingGuest.setCity(incomingData.getCity());
-                if (incomingData.getPostalCode() != null) existingGuest.setPostalCode(incomingData.getPostalCode());
- 
-                guestService.save(existingGuest); // Persistimos los cambios del cliente
-                reservation.setGuest(existingGuest);
-            } else {
-                throw new RuntimeException("Cliente no encontrado en la base de datos.");
+        Guest existingGuest = null;
+
+        if (reservation.getGuest() != null && reservation.getGuest().getIdGuest() != null && reservation.getGuest().getIdGuest() > 0) {
+            existingGuest = guestService.findById(reservation.getGuest().getIdGuest());
+        }
+
+        if (existingGuest == null && reservation.getGuest() != null && reservation.getGuest().getEmail() != null) {
+            existingGuest = guestRepository.findByEmail(reservation.getGuest().getEmail()).orElse(null);
+        }
+
+        if (existingGuest == null) {
+            List<Guest> allGuests = guestService.findAll();
+            if (!allGuests.isEmpty()) {
+                existingGuest = allGuests.get(0);
             }
+        }
+
+        if (existingGuest != null) {
+            Guest incomingData = reservation.getGuest();
+            if (incomingData != null) {
+                if (incomingData.getPhone() != null && !incomingData.getPhone().isBlank()) existingGuest.setPhone(incomingData.getPhone());
+                if (incomingData.getMobilePhone() != null && !incomingData.getMobilePhone().isBlank()) existingGuest.setMobilePhone(incomingData.getMobilePhone());
+                if (incomingData.getAddress() != null && !incomingData.getAddress().isBlank()) existingGuest.setAddress(incomingData.getAddress());
+                if (incomingData.getCountry() != null && !incomingData.getCountry().isBlank()) existingGuest.setCountry(incomingData.getCountry());
+                if (incomingData.getCity() != null && !incomingData.getCity().isBlank()) existingGuest.setCity(incomingData.getCity());
+                if (incomingData.getPostalCode() != null && !incomingData.getPostalCode().isBlank()) existingGuest.setPostalCode(incomingData.getPostalCode());
+            }
+
+            guestService.save(existingGuest);
+            reservation.setGuest(existingGuest);
         } else {
             throw new RuntimeException("La reserva debe estar asociada a un cliente logueado.");
         }

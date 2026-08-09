@@ -1,0 +1,176 @@
+/* ============================================================
+   TIPOGRAFÍA & DESIGN TOKENS — HOTEL MIYABI (雅)
+   EB Garamond: Elegancia serif para encabezados y narrativa Ryokan
+   Plus Jakarta Sans: Máxima legibilidad UI para botones, formularios y tablas
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Paleta Tradicional Japonesa (Nihon no Karā) */
+    --background: #F8F7F4;          /* Kinari: Blanco Papel Washi */
+    --surface: #F0EEE9;             /* Sunago: Arena sutil para contenedores */
+    --surface-card: #FFFFFF;        /* Superficie limpia para tarjetas */
+    
+    --color-sumi: #1C1C1C;          /* Sumi: Tinta china profunda (Texto principal) */
+    --color-ibushi: #5A5854;        /* Ibushi: Carbón atenuado (Texto secundario) */
+    --color-black: #1C1C1C;         /* Compatibilidad */
+    
+    /* Colores de Acento y Marca */
+    --color-enji: #8C1D27;          /* Enji: Carmesí Japonés (CTA Primario) */
+    --color-enji-hover: #72161E;    /* Carmesí Oscuro Hover */
+    --color-kinjiki: #C5A059;       /* Kinjiki: Oro Imperial (Acento Lujo / Badges) */
+    --color-matsu: #2E3B32;         /* Matsu: Verde Pino (Éxito / Disponible) */
+    --color-asagi: #2B586C;         /* Asagi: Azul Profundo Tradicional (Información) */
+    --color-yamabuki: #D9822B;      /* Yamabuki: Dorado Ambarino (Advertencias / Pendiente) */
+    --color-kurogane: #242220;      /* Kurogane: Hierro Oscuro (Superficie Header Admin) */
+    
+    --color-border: rgba(0, 0, 0, 0.07); /* Borde minimalista orgánico */
+    --color-border-hover: rgba(197, 160, 89, 0.35);
+
+    /* Estados y Badges Semánticos */
+    --badge-confirmed-bg: rgba(46, 59, 50, 0.09);
+    --badge-confirmed-color: #2E3B32;
+    --badge-pending-bg: rgba(217, 130, 43, 0.12);
+    --badge-pending-color: #A35A12;
+    --badge-active-bg: rgba(43, 88, 108, 0.1);
+    --badge-active-color: #2B586C;
+    --badge-cancelled-bg: rgba(140, 29, 39, 0.08);
+    --badge-cancelled-color: #8C1D27;
+
+    /* Familias Tipográficas */
+    --font-serif: "EB Garamond", Georgia, serif;
+    --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* Sombras y Elevaciones Zen */
+    --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.06);
+    --shadow-zen-card: 0 2px 16px rgba(28, 28, 28, 0.04);
+    --shadow-zen-elevated: 0 10px 35px rgba(28, 28, 28, 0.07);
+
+    /* Espaciado del contenedor principal */
+    --padding-container-top: 120px;
+    --padding-container-bottom: 120px;
+    --padding-container-left: 8%;
+    --padding-container-right: 3%;   
+    
+    --site-margin: 100px;   
+    --footer-column-gap: 20px; 
+    --footer-links-width: 300px; 
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--color-sumi);
+    line-height: 1.6;
+    overflow-x: hidden; 
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .serif-title {
+    font-family: var(--font-serif);
+    color: var(--color-sumi);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.miyabi-container {
+    padding: var(--padding-container-top) var(--padding-container-right) var(--padding-container-bottom) var(--padding-container-left);
+    max-width: 1800px; 
+    margin: 0 auto;
+}
+
+.miyabi-booking-container {
+    padding: 0 17%;
+}
+
+@media (max-width: 1250px) {
+    .miyabi-booking-container {
+        padding: 0 3%;
+    }
+    :root {
+        --site-margin: 50px;       
+        --footer-column-gap: 40px; 
+    }
+}
+
+@media (max-width: 1024px) {
+    :root {
+        --site-margin: 30px;
+        --footer-links-width: 100%; 
+    }
+}
+
+/* Utilitarios globales para botones y insignias Ryokan */
+.btn-primary-ryokan {
+    background-color: var(--color-enji);
+    color: #FFFFFF;
+    border: 1px solid var(--color-enji);
+    padding: 10px 24px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary-ryokan:hover {
+    background-color: var(--color-enji-hover);
+    border-color: var(--color-enji-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-secondary-ryokan {
+    background-color: transparent;
+    color: var(--color-sumi);
+    border: 1px solid var(--color-sumi);
+    padding: 10px 24px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-secondary-ryokan:hover {
+    background-color: var(--color-sumi);
+    color: #FFFFFF;
+}
+
+.badge-ryokan-luxury {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(197, 160, 89, 0.12);
+    color: #8C6A27;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+}

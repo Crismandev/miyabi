@@ -1,0 +1,9 @@
+S (Específico): Garantizar la disponibilidad en tiempo real y la validación de fechas de entrada/salida.
+
+M (Medible): Mantenimiento de 0 registros de solapamiento de habitaciones en la base de datos (0 casos de overbooking).
+
+A (Alcanzable): Mediante transacciones ACID en MySQL y bloqueos en ReservationService.
+
+R (Relevante): Evita conflictos operativos críticos y pérdida de reputación con los huéspedes.
+
+T (Temporal): Evaluado durante los 3 meses posteriores a la puesta en marcha.

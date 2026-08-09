@@ -69,108 +69,62 @@
    ----------------------------------------------------------------------- */
 
 .room-nametype {
-    font-size: 20px;
+    font-family: var(--font-serif);
+    font-size: 24px;
     font-weight: 500;
-	/* word-spacing sutil aporta un aire tipográfico/editorial al nombre de habitación */
-	word-spacing: 4px;
-    color: #1a1a1a;
+    word-spacing: 2px;
+    color: var(--color-sumi);
     line-height: 1.3;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
-/* Separador minimalista entre el título y el bloque de contenido.
-   El ancho reducido (15%) le confiere un carácter artístico en lugar de
-   estructural, alineado con la estética japonesa del proyecto */
+/* Separador minimalista con tono carmesí Enji sutil */
 .separator-line {
-    width: 15%;
-    height: 1px;
-    background-color: #000;
-    margin-bottom: 15px;
+    width: 25px;
+    height: 2px;
+    background-color: var(--color-enji);
+    margin-bottom: 18px;
 }
 
 .room-description {
+    font-family: var(--font-sans);
     font-size: 14px;
-	font-weight: 500;
-    color: #000;
-    line-height: 1.5;
+    font-weight: 400;
+    color: var(--color-ibushi);
+    line-height: 1.6;
     margin-bottom: 25px;
 }
 
-/* El plano de planta ocupa todo el ancho del contenedor para maximizar
-   la legibilidad del diagrama de distribución de la habitación */
-.room-floorplan {
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-.room-floorplan img {
-    width: 100%;
-    height: auto;
-    /* Borde sutil que enmarca el plano y lo distingue visualmente del fondo blanco */
-    border: 1px solid #1a1a1a;
-}
-
-/* La cursiva diferencia visualmente la descripción corta (tagline/subtítulo)
-   de la descripción principal, estableciendo una jerarquía sin cambiar el peso */
-.room-short-description {
-    font-size: 14px;
-	font-weight: 500;
-    font-style: italic;
-    color: #000;
-    margin-bottom: 15px;
-}
-
-/* -----------------------------------------------------------------------
-   2b. Lista de especificaciones (ubicación, tamaño, amenidades, capacidad)
-   ----------------------------------------------------------------------- */
-
-/* list-style: none elimina el bullet nativo para sustituirlo por el
-   icono personalizado '◎' definido en .icon-bullet */
-.room-specs-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 20px 0;
-    font-size: 14px;
-	font-weight: 500;
-    color: #000;
-}
-
-/* Flex en cada ítem para alinear el icono con el texto, incluyendo
-   el caso donde el texto ocupa múltiples líneas (align-items: flex-start
-   ancla el icono a la primera línea en lugar de centrarlo verticalmente) */
-.room-specs-list li {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 6px;
-    line-height: 1.4;
-}
-
-/* Icono decorativo '◎' que reemplaza al bullet estándar.
-   El margin-right fija el espacio entre icono y texto de forma consistente
-   en todos los ítems, independientemente del contenido */
 .icon-bullet {
-    font-size: 12px;
+    font-size: 10px;
     margin-right: 10px;
-    color: #000;
+    color: var(--color-kinjiki);
 }
 
-/* -----------------------------------------------------------------------
-   2c. CTA de reserva
-   ----------------------------------------------------------------------- */
-
-/* Botón de estilo "ghost": fondo transparente con borde, sin ancho fijo.
-   El padding horizontal amplio (60px) genera la proporción visual de
-   botón ancho sin depender de un width que podría romperse con textos distintos */
 .btn-room-booking {
-    display: inline-block;
-    padding: 10px 60px;
-    border: 1px solid #000;
-	border-radius: 8px;
-    color: #000;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 32px;
+    background-color: var(--color-enji);
+    border: 1px solid var(--color-enji);
+    border-radius: 2px;
+    color: #FFFFFF !important;
+    font-family: var(--font-sans);
     font-size: 13px;
+    font-weight: 600;
     text-transform: uppercase;
     text-decoration: none;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(140, 29, 39, 0.25);
+}
+
+.btn-room-booking:hover {
+    background-color: var(--color-enji-hover);
+    border-color: var(--color-enji-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(140, 29, 39, 0.38);
 }
 
 

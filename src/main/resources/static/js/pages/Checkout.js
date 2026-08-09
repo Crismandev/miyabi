@@ -112,29 +112,43 @@ function renderCheckoutNavbar() {
  * @returns {Promise<void>}
  */
 async function fillUserData() {
-    const guestId = sessionStorage.getItem('guestId');
-    // Sin guestId no hay sesión activa; se continúa sin precargar datos
-    if(!guestId) return;
+    let guestId = sessionStorage.getItem('guestId');
+    
+    // Si no se encuentra guestId en sessionStorage, consultar al servidor /api/auth/check
+    if (!guestId || guestId === "undefined" || guestId === "null") {
+        try {
+            const checkResp = await fetch('/api/auth/check');
+            if (checkResp.ok) {
+                const checkData = await checkResp.json();
+                if (checkData.isLoggedIn) {
+                    guestId = checkData.guestId || checkData.userId;
+                    if (guestId) {
+                        sessionStorage.setItem('guestId', guestId);
+                        sessionStorage.setItem('guestName', checkData.guestName);
+                        sessionStorage.setItem('isLoggedIn', 'true');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error consultando sesión activa:", e);
+        }
+    }
+
+    if (!guestId || guestId === "undefined" || guestId === "null") return;
 
     try {
-        // GET /api/guests/:id → espera { names, surnames, email, phone, mobilePhone }
         const response = await fetch(`/api/guests/${guestId}`);
         if (response.ok) {
             const guest = await response.json();
             
-            // Precarga solo los campos de contacto; los de dirección se dejan vacíos
-            // para que el usuario los confirme activamente (pueden haber cambiado)
             document.getElementById('chk-names').value = guest.names || '';
             document.getElementById('chk-surnames').value = guest.surnames || '';
             document.getElementById('chk-email').value = guest.email || '';
             document.getElementById('chk-phone').value = guest.phone || '';
             document.getElementById('chk-mobile').value = guest.mobilePhone || '';
-        } else {
-            showToast("No pudimos cargar tus datos de perfil. Intenta recargar la página.", true);
         }
     } catch (error) {
         console.error("Error cargando los datos del usuario:", error);
-        showToast("Error de red al intentar cargar tus datos.", true);
     }
 }
 
@@ -143,20 +157,8 @@ async function fillUserData() {
 //  SECCIÓN 4 — ENVÍO FINAL DE LA RESERVA
 // ============================================================
 
-/**
- * Valida el formulario, construye el payload de la reserva y lo envía a la API.
- * Aplica una estrategia de bloqueo del botón durante el envío para prevenir
- * dobles clics y el consecuente riesgo de reservas duplicadas.
- * En caso de éxito, limpia sessionStorage y redirige al historial de reservas.
- * En caso de error (validación, red o servidor), restaura el botón y muestra feedback.
- *
- * @returns {Promise<void>}
- */
 async function processFinalReservation() {
 
-    // === Paso 1: Validación frontend ===
-    // Se validan los campos de dirección porque fillUserData() no los precarga;
-    // el usuario debe completarlos activamente antes de confirmar
     const phone = document.getElementById('chk-phone').value.trim();
     const address = document.getElementById('chk-address').value.trim();
     const city = document.getElementById('chk-city').value.trim();
@@ -165,22 +167,48 @@ async function processFinalReservation() {
 
     if (!phone || !address || !city || !zip || !country) {
         showToast("Por favor, completa todos los campos obligatorios (Teléfono, Dirección, Ciudad, Código Postal, País).", true);
-        // El return cancela la ejecución antes de llegar al fetch, evitando peticiones inválidas
         return;
     }
 
-    // === Paso 2: Bloqueo del botón anti-doble clic ===
-    // Se deshabilita y cambia el texto inmediatamente tras superar la validación,
-    // antes del await, para cubrir el tiempo de espera de la respuesta del servidor
+    let guestId = sessionStorage.getItem('guestId');
+
+    // Si guestId no está en sessionStorage, verificar sesión contra /api/auth/check
+    if (!guestId || guestId === "undefined" || guestId === "null") {
+        try {
+            const checkResp = await fetch('/api/auth/check');
+            if (checkResp.ok) {
+                const checkData = await checkResp.json();
+                if (checkData.isLoggedIn) {
+                    guestId = checkData.guestId || checkData.userId;
+                    if (guestId) {
+                        sessionStorage.setItem('guestId', guestId);
+                        sessionStorage.setItem('guestName', checkData.guestName);
+                        sessionStorage.setItem('isLoggedIn', 'true');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error al consultar sesión de autenticación:", e);
+        }
+    }
+
+    // Si sigue sin haber guestId válido, notificar e invitar a iniciar sesión
+    if (!guestId || guestId === "undefined" || guestId === "null" || isNaN(parseInt(guestId))) {
+        showToast("La reserva debe estar asociada a una cuenta. Por favor inicia sesión o regístrate.", true);
+        if (typeof toggleLoginModal === 'function') {
+            toggleLoginModal();
+        }
+        return;
+    }
+
     const btn = document.getElementById('btn-confirm-booking');
     btn.disabled = true;
     btn.innerText = "PROCESSING...";
 
-    // === Paso 3: Construcción del payload ===
-    // Los datos del formulario se combinan con los de sessionStorage para
-    // construir el objeto completo que espera el endpoint de confirmación
+    const parsedGuestId = parseInt(guestId) || 1;
+
     const guestData = {
-        idGuest: parseInt(sessionStorage.getItem('guestId')),
+        idGuest: parsedGuestId,
         phone: phone,
         mobilePhone: document.getElementById('chk-mobile').value.trim(),
         address: address,

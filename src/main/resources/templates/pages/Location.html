@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ============================================================
+     PÁGINA: ACCESO & UBICACIÓN (pages/Location.html)
+     Instrucciones de Llegada a Yamashiro Onsen, Ishikawa
+     ============================================================ -->
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Miyabi | Acceso & Ubicación</title>
+	<!-- Estilos globales y de sección -->
+	<link rel="stylesheet" th:href="@{/css/base/global.css}">
+	<link rel="stylesheet" th:href="@{/css/pages/Facilities.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/sections.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/scroll-indicator.css}">
+</head>
+
+<body>
+
+	<!-- Navbar global -->
+	<div th:replace="~{fragments/layout/components :: navbar}"></div>
+
+	<!-- Indicador de scroll lateral -->
+	<div th:replace="~{fragments/scroll-indicator :: scroll-indicator('Acceso')}"></div>
+
+	<main class="facilities-page miyabi-container">
+
+		<!-- Sección Introductoria Ubicación -->
+		<div th:replace="~{fragments/sections :: fac-intro(
+	        'https://mukayu.com/wp-content/themes/corporate/img/facilities_jp.svg', 
+	        'Ubicación y Cómo Llegar', 
+	        'MIYABI se ubica en Yamashiro Onsen, un histórico pueblo de aguas termales en la prefectura de Ishikawa, a las faldas del sagrado Monte Hakusan. Convenientemente conectado mediante tren bala Hokuriku Shinkansen desde Tokio, Kioto y Osaka.'
+	    )}"></div>
+
+		<!-- Sección 1: Rutas de Transporte Principal -->
+		<div th:replace="~{fragments/sections :: fac-section(
+	        'Shinkansen & Tren', 
+	        'Desde Tokio, Kioto o Aeropuerto de Komatsu', 
+	        '• Desde Tokio: Hokuriku Shinkansen hasta la estación de Kaga-Onsen (aprox. 2 horas 30 min).<br>• Desde Kioto / Osaka: Tren expreso Thunderbird hasta Kaga-Onsen (1 hora 50 min).<br>• Servicio de transporte privado (Shuttle Bus): Ofrecemos recogida de cortesía desde la estación de Kaga-Onsen coordinando previamente su hora de llegada.', 
+	        ${ {'https://mukayu.com/wp-content/themes/corporate/img/facilities/lob_img_01.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_02.jpg'} },
+	        'Contactar Servicio de Traslado', 
+	        'https://maps.google.com'
+	    )}"></div>
+
+		<!-- Sección 2: Mapa Interactivos y Dirección Postal -->
+		<div th:replace="~{fragments/sections :: fac-section(
+			'Dirección Postal', 
+			'Yamashiro Onsen, Kaga, Ishikawa 922-0242, Japón', 
+			'Coordenadas GPS: 36.2975° N, 136.3621° E.<br>Teléfono de atención al huésped: +81-(0)75-123-4567.<br>Recepción y servicio de Concierge disponible las 24 horas.', 
+			${ {'https://mukayu.com/wp-content/themes/corporate/img/facilities/lob_img_03.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_01.jpg'} },
+			'Abrir en Google Maps', 
+			'https://maps.google.com'
+		)}"></div>
+
+	</main>
+
+	<!-- Footer global -->
+	<div th:replace="~{fragments/layout/components :: footer}"></div>
+
+	<!-- Scripts de interacción -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+	<script th:src="@{/js/base/global.js}"></script>
+
+</body>
+
+</html>

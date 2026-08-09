@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ============================================================
+     PÁGINA: OFERTAS DE ESTANCIA (pages/StayOffers.html)
+     Paquetes Exclusivos y Promociones Estacionales Ryokan
+     ============================================================ -->
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Miyabi | Ofertas de Estancia & Paquetes</title>
+	<!-- Estilos globales y de sección -->
+	<link rel="stylesheet" th:href="@{/css/base/global.css}">
+	<link rel="stylesheet" th:href="@{/css/pages/Facilities.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/sections.css}">
+	<link rel="stylesheet" th:href="@{/css/fragments/scroll-indicator.css}">
+</head>
+
+<body>
+
+	<!-- Navbar global -->
+	<div th:replace="~{fragments/layout/components :: navbar}"></div>
+
+	<!-- Indicador de scroll lateral -->
+	<div th:replace="~{fragments/scroll-indicator :: scroll-indicator('Ofertas')}"></div>
+
+	<main class="facilities-page miyabi-container">
+
+		<!-- Sección Introductoria Ofertas -->
+		<div th:replace="~{fragments/sections :: fac-intro(
+	        'https://mukayu.com/wp-content/themes/corporate/img/rooms_jp.svg', 
+	        'Ofertas de Estancia Exclusivas', 
+	        'Descubra nuestras promociones de temporada y programas especiales diseñados para ofrecer una inmersión completa en la cultura Ryokan: gastronomía Kaiseki estacional, masajes en Spa Entei y degustación de sake artesanal.'
+	    )}"></div>
+
+		<!-- Sección 1: Escapada Romántica & Gastronomía Kaiseki -->
+		<div th:replace="~{fragments/sections :: fac-section(
+	        'Paquete Kaiseki', 
+	        'Experiencia Kaiseki Horin & Spa 2 Noches', 
+	        'Incluye alojamiento en Suite Tatami con baño onsen privado al aire libre, cena degustación Kaiseki de 9 tiempos por el Chef Ejecutivo, desayuno tradicional japonés y tratamiento relajante de 60 minutos en el Spa Entei.', 
+	        ${ {'https://mukayu.com/wp-content/themes/corporate/img/index/cuisine_img.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/index/rooms_img.jpg'} },
+	        'Reservar Paquete', 
+	        '/reservation'
+	    )}"></div>
+
+		<!-- Sección 2: Retiro Espiritual & Desconexión Zen -->
+		<div th:replace="~{fragments/sections :: fac-section(
+			'Retiro Zen', 
+			'Estancia Prolongada de Salud & Naturaleza', 
+			'Diseñado para quienes buscan renovar su energía en un entorno de paz absoluta. Incluye 3 o más noches de hospedaje, acceso ilimitado al Onsen termal, ceremonia del té privada y taller de meditación al amanecer.', 
+			${ {'https://mukayu.com/wp-content/themes/corporate/img/facilities/gar_img_01.jpg', 
+				'https://mukayu.com/wp-content/themes/corporate/img/index/spa_img.jpg'} },
+			'Consultar Fechas', 
+			'/rooms'
+		)}"></div>
+
+	</main>
+
+	<!-- Footer global -->
+	<div th:replace="~{fragments/layout/components :: footer}"></div>
+
+	<!-- Scripts de interacción -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+	<script th:src="@{/js/base/global.js}"></script>
+
+</body>
+
+</html>

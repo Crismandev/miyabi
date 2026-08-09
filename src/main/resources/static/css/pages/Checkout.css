@@ -63,9 +63,11 @@
 /* Bloque con borde dorado característico del sistema de diseño Miyabi;
    actúa como tarjeta visual para cada sección del formulario */
 .checkout-form-container { 
-    background: #fff; 
-    border: 1px solid #DDCFB2;
-    padding: 15px;
+    background: var(--surface-card); 
+    border: 1px solid var(--color-border);
+    padding: 24px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-subtle);
 }
 
 /* Cabecera de sección: título a la izquierda y texto "* Obligatorio"
@@ -74,16 +76,54 @@
     display: flex; 
     justify-content: space-between; 
     align-items: flex-end; 
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Jerarquía tipográfica de los títulos del formulario */
-.checkout-section-title { font-size: 22px; font-weight: normal; margin: 0; }
-.checkout-subsection-title { font-size: 14px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin: 35px 0 15px 0; }
-.checkout-required-text { font-size: 14px; color: #000; margin: 0; }
-/* Asterisco de campo obligatorio en rojo para seguir la convención universal de formularios */
-.req-star { color: #B30000; margin-left: 3px; font-weight: bold; }
+.checkout-section-title { font-family: var(--font-serif); font-size: 24px; font-weight: 500; margin: 0; color: var(--color-sumi); }
+.checkout-subsection-title { font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin: 35px 0 15px 0; color: var(--color-sumi); }
+.checkout-required-text { font-family: var(--font-sans); font-size: 13px; color: var(--color-ibushi); margin: 0; }
+/* Asterisco de campo obligatorio en rojo carmesí Enji */
+.req-star { color: var(--color-enji); margin-left: 3px; font-weight: bold; }
+
+.confirm-action-container .btn-checkout-final {
+    width: 280px; 
+    padding: 16px 24px;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    gap: 10px;
+    background-color: var(--color-enji);
+    color: #FFFFFF;
+    border: 1px solid var(--color-enji);
+    border-radius: 2px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(140, 29, 39, 0.25);
+}
+
+.confirm-action-container .btn-checkout-final:hover:not(:disabled) {
+    background-color: var(--color-enji-hover);
+    border-color: var(--color-enji-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(140, 29, 39, 0.38);
+}
+
+/* Estado deshabilitado: gris neutro que indica visualmente que
+   la acción no está disponible hasta completar los campos requeridos */
+.confirm-action-container .btn-checkout-final:disabled {
+    background-color: #E2DFD7;
+    border-color: #E2DFD7;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+}
 
 
 /* ============================================================

@@ -47,3 +47,9 @@ target/
 src/main/resources/application.properties
 appsettings.json
 appsettings*.json
+
+# --- ANGULAR & NODE ---
+frontend/node_modules/
+frontend/dist/
+.angular/
+graphify-out/

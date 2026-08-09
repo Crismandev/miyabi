@@ -1,26 +1,58 @@
 /* ============================================================
-   TIPOGRAFÍA
-   EB Garamond: fuente principal serif del proyecto, usada en
-   body y heredada por todos los componentes. El rango de peso
-   400–800 cubre desde el texto corrido hasta los títulos.
+   TIPOGRAFÍA & DESIGN TOKENS — HOTEL MIYABI (雅)
+   EB Garamond: Elegancia serif para encabezados y narrativa Ryokan
+   Plus Jakarta Sans: Máxima legibilidad UI para botones, formularios y tablas
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
-
-/* ============================================================
-   VARIABLES GLOBALES
-   Tokens de diseño centralizados que definen la paleta de
-   colores y el sistema de espaciado del contenedor principal.
-   Modificar aquí afecta a toda la aplicación.
-   ============================================================ */
 :root {
-	--background: #F7F7F5;     
-    --color-black: #000000;    
+    /* Paleta Tradicional Japonesa (Nihon no Karā) */
+    --background: #F8F7F4;          /* Kinari: Blanco Papel Washi */
+    --surface: #F0EEE9;             /* Sunago: Arena sutil para contenedores */
+    --surface-card: #FFFFFF;        /* Superficie limpia para tarjetas */
+    
+    --color-sumi: #1C1C1C;          /* Sumi: Tinta china profunda (Texto principal) */
+    --color-ibushi: #5A5854;        /* Ibushi: Carbón atenuado (Texto secundario) */
+    --color-black: #1C1C1C;         /* Compatibilidad */
+    
+    /* Colores de Acento y Marca */
+    --color-enji: #8C1D27;          /* Enji: Carmesí Japonés (CTA Primario) */
+    --color-enji-hover: #72161E;    /* Carmesí Oscuro Hover */
+    --color-kinjiki: #C5A059;       /* Kinjiki: Oro Imperial (Acento Lujo / Badges) */
+    --color-matsu: #2E3B32;         /* Matsu: Verde Pino (Éxito / Disponible) */
+    --color-asagi: #2B586C;         /* Asagi: Azul Profundo Tradicional (Información) */
+    --color-yamabuki: #D9822B;      /* Yamabuki: Dorado Ambarino (Advertencias / Pendiente) */
+    --color-kurogane: #242220;      /* Kurogane: Hierro Oscuro (Superficie Header Admin) */
+    
+    --color-border: rgba(0, 0, 0, 0.07); /* Borde minimalista orgánico */
+    --color-border-hover: rgba(197, 160, 89, 0.35);
 
-	--padding-container-top: 120px;
-	--padding-container-bottom: 120px;
-	--padding-container-left: 8%; /* Margen izquierdo mayor para crear asimetría intencional */
-	--padding-container-right: 3%;   
+    /* Estados y Badges Semánticos */
+    --badge-confirmed-bg: rgba(46, 59, 50, 0.09);
+    --badge-confirmed-color: #2E3B32;
+    --badge-pending-bg: rgba(217, 130, 43, 0.12);
+    --badge-pending-color: #A35A12;
+    --badge-active-bg: rgba(43, 88, 108, 0.1);
+    --badge-active-color: #2B586C;
+    --badge-cancelled-bg: rgba(140, 29, 39, 0.08);
+    --badge-cancelled-color: #8C1D27;
+
+    /* Familias Tipográficas */
+    --font-serif: "EB Garamond", Georgia, serif;
+    --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* Sombras y Elevaciones Zen */
+    --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.06);
+    --shadow-zen-card: 0 2px 16px rgba(28, 28, 28, 0.04);
+    --shadow-zen-elevated: 0 10px 35px rgba(28, 28, 28, 0.07);
+
+    /* Espaciado del contenedor principal */
+    --padding-container-top: 120px;
+    --padding-container-bottom: 120px;
+    --padding-container-left: 8%;
+    --padding-container-right: 3%;   
 }
 
 
@@ -62,84 +94,163 @@
 
 
 /* ============================================================
-   BASE — BODY
-   Define la tipografía, color de fondo y color de texto base
-   heredados por todos los elementos de la página.
-   overflow-x: hidden previene el scroll horizontal causado
-   por animaciones GSAP que trasladan elementos fuera del viewport.
+   BASE — BODY Y ENCABEZADOS
    ============================================================ */
 body {
-    font-family: "EB Garamond", serif;
+    font-family: var(--font-sans);
     background-color: var(--background);
-    color: var(--color-black);
+    color: var(--color-sumi);
     line-height: 1.6;
     overflow-x: hidden; 
-	text-decoration: none;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
 }
 
+h1, h2, h3, h4, .serif-title {
+    font-family: var(--font-serif);
+    color: var(--color-sumi);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
 
 /* ============================================================
-   COMPONENTE — NAVBAR
-   Barra de navegación fija en la parte superior de la página.
-   z-index: 1000 la mantiene por encima del contenido de scroll
-   y de los elementos de sección, pero por debajo del menú
-   lateral (.side-menu z-index: 999 no aplica; ver z-index
-   del botón hamburguesa a continuación).
-   La transición de background-color proporciona el efecto de
-   "navbar transparente → opaca" al hacer scroll.
+   COMPONENTE — NAVBAR (Glassmorphism Ryokan)
    ============================================================ */
 .miyabi-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 50px;
+    padding: 18px 50px;
     position: fixed;
     top: 0;
     width: 100%;
     z-index: 1000;
-    transition: background-color 0.4s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: rgba(248, 247, 244, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-/* Estado "scrolled": clase añadida vía JS cuando el usuario baja de la posición 0.
-   Rellena el fondo para mantener la legibilidad sobre el contenido de la página. */
 .miyabi-navbar.scrolled {
-    background-color: var(--background);
+    background-color: rgba(248, 247, 244, 0.92);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .miyabi-navbar .logo {
     font-size: 22px;
     letter-spacing: 6px;
     text-decoration: none;
-    color: var(--color-black);
+    color: var(--color-sumi);
+    font-family: var(--font-serif);
 }
 
-/* El logotipo es una imagen SVG/PNG; height fijo + width: auto preserva la proporción */
 .nav-left .logo img {
-	height: 35px;
-	width: auto;
-	display: block;
+    height: 35px;
+    width: auto;
+    display: block;
+    transition: opacity 0.3s ease;
 }
 
-/* z-index: 1001 eleva el grupo de acciones (reserva + hamburguesa) por encima
-   de la navbar base, necesario cuando el menú lateral se despliega sobre ella */
+.nav-left .logo img:hover {
+    opacity: 0.85;
+}
+
 .nav-right {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 25px;
     z-index: 1001;
 }
 
-/* Botón de reserva con borde sutil; el borde actúa como CTA sin competir
-   visualmente con el logotipo */
+/* Botón CTA de Reservas con estilo Carmesí Enji */
 .btn-booking {
-    border: 1px solid var(--color-black);
-	border-radius: 4px;
-    padding: 2px 12px;
+    border: 1px solid var(--color-enji);
+    background-color: var(--color-enji);
+    border-radius: 2px;
+    padding: 6px 20px;
     text-decoration: none;
-    color: var(--color-black);
-    font-size: 18px;
+    color: #FFFFFF !important;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(140, 29, 39, 0.2);
+}
+
+.btn-booking:hover {
+    background-color: var(--color-enji-hover);
+    border-color: var(--color-enji-hover);
+    box-shadow: 0 4px 14px rgba(140, 29, 39, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Utilitarios globales para botones y insignias Ryokan */
+.btn-primary-ryokan {
+    background-color: var(--color-enji);
+    color: #FFFFFF;
+    border: 1px solid var(--color-enji);
+    padding: 10px 24px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
     letter-spacing: 1px;
+    border-radius: 2px;
+    cursor: pointer;
     transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary-ryokan:hover {
+    background-color: var(--color-enji-hover);
+    border-color: var(--color-enji-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-secondary-ryokan {
+    background-color: transparent;
+    color: var(--color-sumi);
+    border: 1px solid var(--color-sumi);
+    padding: 10px 24px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-secondary-ryokan:hover {
+    background-color: var(--color-sumi);
+    color: #FFFFFF;
+}
+
+.badge-ryokan-luxury {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(197, 160, 89, 0.12);
+    color: #8C6A27;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
 }
 
 

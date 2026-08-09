@@ -54,4 +54,15 @@ public class UserService {
     public void deleteById(Integer id) {
         userRepository.deleteById(id);
     }
+
+    /**
+     * Autentica a un usuario del personal (Admin/Recepcionista) por correo y contraseña.
+     */
+    public User authenticate(String email, String password) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        return null;
+    }
 }

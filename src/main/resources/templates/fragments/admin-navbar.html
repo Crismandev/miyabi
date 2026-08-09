@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Fragmento Thymeleaf reutilizable: Navbar del Panel Administrativo Ryokan (Back-office) -->
+<header th:fragment="adminNavbar(activeTab)" class="miyabi-admin-navbar">
+    <div class="d-flex align-items-center gap-4">
+        <!-- Logotipo Ryokan Admin -->
+        <a th:href="@{/admin/dashboard}" class="miyabi-admin-brand">
+            <span class="kanji-logo">雅</span>
+            <span class="brand-title">MIYABI</span>
+            <span class="brand-badge">Back-office</span>
+        </a>
+
+        <!-- Menú de Navegación de Administración -->
+        <ul class="miyabi-admin-nav ms-3 d-none d-md-flex">
+            <li class="miyabi-admin-nav-item">
+                <a th:href="@{/admin/dashboard}" 
+                   class="nav-link-miyabi" 
+                   th:classappend="${activeTab == 'dashboard' ? 'active' : ''}">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
+            </li>
+            <li class="miyabi-admin-nav-item">
+                <a th:href="@{/admin/rooms}" 
+                   class="nav-link-miyabi" 
+                   th:classappend="${activeTab == 'rooms' ? 'active' : ''}">
+                    <i class="bi bi-door-open-fill"></i> Habitaciones
+                </a>
+            </li>
+            <li class="miyabi-admin-nav-item">
+                <a th:href="@{/admin/room-types}" 
+                   class="nav-link-miyabi" 
+                   th:classappend="${activeTab == 'room-types' ? 'active' : ''}">
+                    <i class="bi bi-tags-fill"></i> Tarifas & Suites
+                </a>
+            </li>
+            <li class="miyabi-admin-nav-item">
+                <a th:href="@{/admin/users}" 
+                   class="nav-link-miyabi" 
+                   th:classappend="${activeTab == 'users' ? 'active' : ''}">
+                    <i class="bi bi-people-fill"></i> Personal
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Acciones Rápidas y Usuario Admin -->
+    <div class="admin-navbar-actions">
+        <!-- Perfil rápido Admin (Pill UX Impecable) -->
+        <div class="admin-profile-pill d-none d-sm-flex">
+            <span class="admin-avatar">A</span>
+            <div class="admin-user-info">
+                <span class="admin-name">Admin Ryokan</span>
+                <span class="admin-role">Administrador</span>
+            </div>
+        </div>
+
+        <!-- Botón Ver Portal Web -->
+        <a href="/" class="btn-view-site">
+            <i class="bi bi-box-arrow-up-right"></i> Ver Portal Web
+        </a>
+    </div>
+</header>
+
+</body>
+</html>
