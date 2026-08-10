@@ -50,13 +50,16 @@ public class RoomTypeController {
         return roomTypeService.save(roomType);
     }
     
+    @PutMapping("/{id}")
+    public RoomType updateRoomType(@PathVariable Integer id, @RequestBody RoomType roomType) {
+        roomType.setIdTipo(id);
+        return roomTypeService.save(roomType);
+    }
+
     /**
      * Endpoint DELETE: /api/room-types/{id}
      * Elimina un tipo de habitación existente según su ID.
-     * (Método implementado por Fabricio para completar el CRUD de esta entidad en el panel de admin).
-     * * @param id El identificador de la categoría que se desea eliminar, extraído de la URL (@PathVariable).
      */
-    // Agregado x Fabricio
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         roomTypeService.deleteById(id);

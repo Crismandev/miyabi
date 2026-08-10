@@ -1,18 +1,26 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent],
   template: `
-    <app-navbar></app-navbar>
+    @if (!isAdminRoute) {
+      <app-navbar></app-navbar>
+    }
+
     <div class="main-content">
       <router-outlet></router-outlet>
     </div>
-    <app-footer></app-footer>
+
+    @if (!isAdminRoute) {
+      <app-footer></app-footer>
+    }
   `,
   styles: [`
     .main-content {
@@ -21,5 +29,14 @@ import { FooterComponent } from './components/footer/footer.component';
   `]
 })
 export class AppComponent {
-  title = 'Hotel Miyabi';
+  private router = inject(Router);
+  isAdminRoute = false;
+
+  constructor() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.isAdminRoute = event.urlAfterRedirects.includes('/admin');
+    });
+  }
 }

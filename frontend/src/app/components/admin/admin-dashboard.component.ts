@@ -31,17 +31,17 @@ Chart.register(...registerables);
             </a>
           </li>
           <li class="miyabi-admin-nav-item">
-            <a routerLink="/admin/dashboard" (click)="activeTab = 'rooms'" class="nav-link-miyabi">
+            <a routerLink="/admin/rooms" class="nav-link-miyabi">
               <i class="bi bi-door-open-fill"></i> Habitaciones
             </a>
           </li>
           <li class="miyabi-admin-nav-item">
-            <a routerLink="/rooms" class="nav-link-miyabi">
+            <a routerLink="/admin/room-types" class="nav-link-miyabi">
               <i class="bi bi-tags-fill"></i> Tarifas & Suites
             </a>
           </li>
           <li class="miyabi-admin-nav-item">
-            <a routerLink="/admin/reports" class="nav-link-miyabi">
+            <a routerLink="/admin/users" class="nav-link-miyabi">
               <i class="bi bi-people-fill"></i> Personal
             </a>
           </li>
@@ -185,7 +185,7 @@ Chart.register(...registerables);
               <i class="bi bi-search"></i>
               <input type="text" [(ngModel)]="searchQuery" (input)="filterMovements()" placeholder="Buscar por código, cliente..." />
             </div>
-            <a routerLink="/admin/reports" class="btn-primary-ryokan" style="padding: 6px 14px; font-size: 12px;">
+            <a routerLink="/admin/rooms" class="btn-primary-ryokan" style="padding: 6px 14px; font-size: 12px;">
               Ver Habitaciones →
             </a>
           </div>
@@ -261,7 +261,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   reservations: Reservation[] = [];
   filteredReservations: Reservation[] = [];
   searchQuery = '';
-  activeTab = 'dashboard';
 
   ngOnInit() {
     this.loadData();
