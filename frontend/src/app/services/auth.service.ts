@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, of } from 'rxjs';
 
 export interface UserSession {
   isLoggedIn: boolean;
@@ -18,7 +18,10 @@ export class AuthService {
   currentUser = signal<UserSession>(this.getInitialSession());
 
   constructor(private http: HttpClient) {
-    this.checkSession().subscribe();
+    this.checkSession().subscribe({
+      next: () => {},
+      error: () => {}
+    });
   }
 
   getInitialSession(): UserSession {
@@ -69,6 +72,11 @@ export class AuthService {
     return this.http.get<UserSession>(`${this.apiUrl}/check`, { withCredentials: true }).pipe(
       tap(session => {
         this.setSession(session);
+      }),
+      catchError(() => {
+        const fallback = this.getInitialSession();
+        this.currentUser.set(fallback);
+        return of(fallback);
       })
     );
   }
@@ -77,6 +85,10 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true, responseType: 'text' }).pipe(
       tap(() => {
         this.setSession({ isLoggedIn: false });
+      }),
+      catchError(() => {
+        this.setSession({ isLoggedIn: false });
+        return of(null);
       })
     );
   }
