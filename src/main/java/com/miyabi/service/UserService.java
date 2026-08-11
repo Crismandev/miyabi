@@ -2,7 +2,9 @@ package com.miyabi.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.miyabi.models.User;
+import com.miyabi.repository.AccessLogRepository;
 import com.miyabi.repository.UserRepository;
 
 /**
@@ -13,18 +15,18 @@ import com.miyabi.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AccessLogRepository accessLogRepository;
 
     /**
      * Inyección de dependencias por constructor.
-     * Mantiene la arquitectura limpia y facilita las pruebas de integración.
      */
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, AccessLogRepository accessLogRepository) {
         this.userRepository = userRepository;
+        this.accessLogRepository = accessLogRepository;
     }
 
     /**
      * Recupera la lista completa de empleados registrados en el sistema.
-     * Utilizado para el panel de gestión de recursos humanos del hotel.
      */
     public List<User> findAll() {
         return userRepository.findAll();
@@ -39,20 +41,31 @@ public class UserService {
 
     /**
      * Registra un nuevo empleado o actualiza los datos de uno existente.
-     * Permite modificar nombres, correos o roles asignados.
      */
     public User save(User user) {
         return userRepository.save(user);
     }
     
     /**
-     * Elimina una cuenta de usuario del sistema.
-     * (Agregado por Fabricio): Crucial para la revocación de accesos cuando 
-     * un empleado deja de laborar en el hotel.
+     * Elimina de forma transaccional o deshabilita la cuenta de un usuario.
      * @param id Identificador del usuario a eliminar.
      */
+    @Transactional
     public void deleteById(Integer id) {
-        userRepository.deleteById(id);
+        if (id == null) return;
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            try {
+                // 1. Limpiar logs de acceso del usuario para evitar restricción FK
+                accessLogRepository.deleteByUser_IdUsuario(id);
+                // 2. Borrar físicamente si no tiene reservas vinculadas
+                userRepository.delete(user);
+            } catch (Exception e) {
+                // 3. Fallback: Desactivar la cuenta de usuario (soft-delete) si tiene historial operativo
+                user.setState(0);
+                userRepository.save(user);
+            }
+        }
     }
 
     /**

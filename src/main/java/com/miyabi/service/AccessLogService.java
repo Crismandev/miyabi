@@ -25,7 +25,15 @@ public class AccessLogService {
      * @return Lista de todos los registros de acceso.
      */
     public List<AccessLog> findAll() {
-        return accessLogRepository.findAll();
+        return accessLogRepository.findAllByOrderByIdAccessDesc();
+    }
+
+    /**
+     * Recupera los 10 movimientos más recientes.
+     * @return Lista de los 10 últimos accesos.
+     */
+    public List<AccessLog> findRecentLogs() {
+        return accessLogRepository.findTop10ByOrderByIdAccessDesc();
     }
 
     /**

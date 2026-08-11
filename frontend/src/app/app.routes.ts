@@ -15,6 +15,7 @@ import { AdminRoomsComponent } from './components/admin/admin-rooms.component';
 import { AdminRoomTypesComponent } from './components/admin/admin-room-types.component';
 import { AdminUsersComponent } from './components/admin/admin-users.component';
 import { AdminReportsComponent } from './components/admin/admin-reports.component';
+import { AdminMovementsComponent } from './components/admin/admin-movements.component';
 import { authGuard, adminGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -36,6 +37,7 @@ export const routes: Routes = [
   { path: 'admin/rooms', component: AdminRoomsComponent, canActivate: [adminGuard] },
   { path: 'admin/room-types', component: AdminRoomTypesComponent, canActivate: [adminGuard] },
   { path: 'admin/users', component: AdminUsersComponent, canActivate: [adminGuard] },
+  { path: 'admin/movements', component: AdminMovementsComponent, canActivate: [adminGuard] },
   { path: 'admin/reports', component: AdminReportsComponent, canActivate: [adminGuard] },
 
   { path: '**', redirectTo: '' }

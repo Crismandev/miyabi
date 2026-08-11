@@ -39,6 +39,11 @@ import { UserService, UserStaff } from '../../services/user.service';
               <i class="bi bi-people-fill"></i> Personal
             </a>
           </li>
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/movements" class="nav-link-miyabi">
+              <i class="bi bi-clock-history"></i> Movimientos
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -98,7 +103,7 @@ import { UserService, UserStaff } from '../../services/user.service';
               </tr>
             </thead>
             <tbody>
-              @for (u of filteredUsers; track u.idUsuario) {
+              @for (u of filteredUsers; track getUserId(u) || u.email) {
                 <tr>
                   <td>
                     <div class="d-flex align-items-center gap-3">
@@ -107,7 +112,7 @@ import { UserService, UserStaff } from '../../services/user.service';
                       </div>
                       <div>
                         <div class="fw-semibold text-dark">{{ u.names }} {{ u.surnames }}</div>
-                        <div class="text-muted small">ID #{{ u.idUsuario }}</div>
+                        <div class="text-muted small">ID #{{ getUserId(u) }}</div>
                       </div>
                     </div>
                   </td>
@@ -127,7 +132,7 @@ import { UserService, UserStaff } from '../../services/user.service';
                       <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm me-1" (click)="openEditModal(u)">
                         <i class="bi bi-pencil"></i> Editar
                       </button>
-                      <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" (click)="deleteUser(u.idUsuario!)">
+                      <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" (click)="deleteUser(getUserId(u))">
                         <i class="bi bi-trash"></i> Dar de baja
                       </button>
                     </div>
@@ -236,6 +241,10 @@ export class AdminUsersComponent implements OnInit {
     this.loadData();
   }
 
+  getUserId(user: UserStaff): number {
+    return user.idUsuario || (user as any).idUser || 0;
+  }
+
   loadData() {
     this.userService.getAllUsers().subscribe({
       next: (data) => {
@@ -277,42 +286,65 @@ export class AdminUsersComponent implements OnInit {
   openEditModal(user: UserStaff) {
     this.isEditMode = true;
     this.currentUser = { ...user, password: '' };
-    this.selectedRoleId = user.rol?.rolId || 1;
+    this.selectedRoleId = user.rol?.idRol || user.rol?.rolId || 1;
     this.showModal = true;
   }
 
   saveUser() {
     const roleNames: Record<number, string> = { 1: 'Administrator', 2: 'Receptionist', 3: 'Client' };
+    const userId = this.getUserId(this.currentUser as UserStaff);
+    const rolIdNum = Number(this.selectedRoleId);
     const userToSave: UserStaff = {
-      idUsuario: this.currentUser.idUsuario,
+      idUsuario: userId || undefined,
+      idUser: userId || undefined,
       names: this.currentUser.names || '',
       surnames: this.currentUser.surnames || '',
       email: this.currentUser.email || '',
-      password: this.currentUser.password || undefined,
-      state: this.currentUser.state ?? 1,
-      rol: { rolId: Number(this.selectedRoleId), nameRol: roleNames[Number(this.selectedRoleId)] || 'Staff' }
+      password: (this.currentUser.password && this.currentUser.password.trim().length > 0) ? this.currentUser.password : (this.isEditMode ? undefined : '1234'),
+      state: Number(this.currentUser.state ?? 1),
+      rol: { idRol: rolIdNum, rolId: rolIdNum, nameRol: roleNames[rolIdNum] || 'Staff' }
     };
 
-    if (this.isEditMode && userToSave.idUsuario) {
-      this.userService.updateUser(userToSave.idUsuario, userToSave).subscribe({
-        next: () => { this.showModal = false; this.loadData(); },
-        error: () => { this.showModal = false; }
+    if (this.isEditMode && userId) {
+      this.userService.updateUser(userId, userToSave).subscribe({
+        next: () => {
+          this.showModal = false;
+          this.loadData();
+        },
+        error: (err) => {
+          console.error('Error al actualizar usuario:', err);
+          alert('Error al actualizar en la base de datos: ' + (err.error?.message || err.message || 'Error del servidor'));
+          this.showModal = false;
+          this.loadData();
+        }
       });
     } else {
       this.userService.createUser(userToSave).subscribe({
-        next: () => { this.showModal = false; this.loadData(); },
-        error: () => { this.showModal = false; }
+        next: () => {
+          this.showModal = false;
+          this.loadData();
+        },
+        error: (err) => {
+          console.error('Error al crear usuario:', err);
+          alert('Error al crear en la base de datos: ' + (err.error?.message || err.message || 'Error del servidor'));
+          this.showModal = false;
+          this.loadData();
+        }
       });
     }
   }
 
   deleteUser(id: number) {
+    if (!id) return;
     if (confirm('¿Está seguro de dar de baja a este miembro del personal?')) {
       this.userService.deleteUser(id).subscribe({
-        next: () => this.loadData(),
-        error: () => {
-          this.users = this.users.filter(u => u.idUsuario !== id);
-          this.filterUsers();
+        next: () => {
+          this.loadData();
+        },
+        error: (err) => {
+          console.error('Error al dar de baja usuario:', err);
+          alert('Error al actualizar estado en la base de datos: ' + (err.error?.message || err.message || 'Error del servidor'));
+          this.loadData();
         }
       });
     }

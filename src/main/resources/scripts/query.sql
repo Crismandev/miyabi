@@ -81,7 +81,7 @@ CREATE TABLE rooms (
     additional_description TEXT,
     date_last_maintenance DATE,
     type_id INT NOT NULL,
-    FOREIGN KEY (type_id) REFERENCES room_type(type_id)
+    FOREIGN KEY (type_id) REFERENCES room_type(type_id) ON DELETE CASCADE
 );
 
 -- TABLA 6: Reservas
@@ -109,7 +109,7 @@ CREATE TABLE reservations (
     user_id_checkin INT COMMENT 'Recepcionista que hizo check-in',
     user_id_checkout INT COMMENT 'Recepcionista que hizo check-out',
     FOREIGN KEY (guest_id) REFERENCES guests(guest_id),
-    FOREIGN KEY (room_id) REFERENCES rooms(room_id),
+    FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id_checkin) REFERENCES users(user_id),
     FOREIGN KEY (user_id_checkout) REFERENCES users(user_id),
     CONSTRAINT chk_max_guests CHECK (num_adults + num_children <= 6),
@@ -138,7 +138,7 @@ CREATE TABLE consumption (
     reservation_id INT NOT NULL,
     service_id INT NOT NULL,
     user_registration_id INT COMMENT 'Quien registró el consumo',
-    FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id),
+    FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE CASCADE,
     FOREIGN KEY (service_id) REFERENCES services_catalog(service_id),
     FOREIGN KEY (user_registration_id) REFERENCES users(user_id)
 );
@@ -154,7 +154,7 @@ CREATE TABLE payments (
     observation TEXT,
     reservation_id INT NOT NULL UNIQUE,
     user_charge_id INT COMMENT 'Recepcionista que cobró',
-    FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id),
+    FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE CASCADE,
     FOREIGN KEY (user_charge_id) REFERENCES users(user_id)
 );
 

@@ -54,7 +54,7 @@ import { Reservation } from '../../models/reservation.model';
             </tr>
           </thead>
           <tbody>
-            @for (res of paginatedReservations; track res.idReserva) {
+            @for (res of paginatedReservations; track res.idReserva || res.reservationCode || $index) {
               <tr>
                 <td><strong>{{ res.reservationCode || 'RES-2026-' + res.idReserva }}</strong></td>
                 <td>{{ res.guest?.names }} {{ res.guest?.surnames }}</td>
@@ -71,9 +71,9 @@ import { Reservation } from '../../models/reservation.model';
 
         <!-- Paginación Reactiva (Cumple Criterio VI Rúbrica) -->
         <div class="pagination-controls">
-          <button class="btn-pagination" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
+          <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
           <span>Página {{ currentPage }} de {{ totalPages }}</span>
-          <button class="btn-pagination" [disabled]="currentPage >= totalPages" (click)="goToPage(currentPage + 1)">Siguiente</button>
+          <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm" [disabled]="currentPage >= totalPages" (click)="goToPage(currentPage + 1)">Siguiente</button>
         </div>
       </div>
     </div>

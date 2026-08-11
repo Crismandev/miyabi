@@ -21,6 +21,11 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, Intege
     List<Consumption> findByReservation_ReservationId(Integer reservationId);
 
     /**
+     * Elimina todos los consumos asociados a una reserva.
+     */
+    void deleteByReservation_ReservationId(Integer reservationId);
+
+    /**
      * Consulta Nativa (SQL): Utilizada específicamente para la generación de la Boleta/Reporte.
      * Realiza un INNER JOIN entre la tabla de consumos y el catálogo de servicios para 
      * obtener nombres legibles de los servicios consumidos.

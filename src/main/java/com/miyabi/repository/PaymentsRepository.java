@@ -18,4 +18,9 @@ public interface PaymentsRepository extends JpaRepository<Payments, Integer> {
      * @return El objeto Payments vinculado a dicha reserva.
      */
     Payments findByReservation_ReservationId(Integer reservationId);
+
+    /**
+     * Elimina el registro de pago asociado a una reserva.
+     */
+    void deleteByReservation_ReservationId(Integer reservationId);
 }

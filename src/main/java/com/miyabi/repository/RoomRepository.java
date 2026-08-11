@@ -19,4 +19,9 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
      * @return Lista de habitaciones que coinciden con dicho estado.
      */
     List<Room> findByState(String state);
+
+    /**
+     * Obtiene las habitaciones asociadas a una categoría / tipo de habitación específica.
+     */
+    List<Room> findByRoomType_IdTipo(Integer idTipo);
 }

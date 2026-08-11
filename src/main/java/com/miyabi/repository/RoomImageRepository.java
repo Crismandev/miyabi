@@ -19,4 +19,9 @@ public interface RoomImageRepository extends JpaRepository<RoomImage, Integer> {
      * @return Una lista de objetos RoomImage con las URLs y textos descriptivos.
      */
     List<RoomImage> findByRoomType_IdTipo(Integer typeId);
+
+    /**
+     * Elimina las imágenes asociadas a una categoría de habitación.
+     */
+    void deleteByRoomType_IdTipo(Integer typeId);
 }

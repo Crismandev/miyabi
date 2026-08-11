@@ -619,3 +619,108 @@ h1, h2, h3, h4, .serif-title {
 
 .badge-cancelled { background-color: rgba(140, 29, 39, 0.08); color: #8C1D27; border: 1px solid rgba(140, 29, 39, 0.2); }
 .badge-cancelled::before { background-color: #8C1D27; }
+
+/* ============================================================
+   SISTEMA DE BOTONES RYOKAN MIYABI (雅 BRANDING EXCELLENCE)
+   ============================================================ */
+
+/* Reset global para elementos button */
+button {
+    font-family: var(--font-sans);
+    outline: none;
+}
+
+.btn-miyabi {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.btn-miyabi:focus-visible {
+    outline: 2px solid var(--color-kinjiki);
+    outline-offset: 2px;
+}
+
+.btn-miyabi-enji {
+    background: linear-gradient(135deg, var(--color-enji) 0%, #76161f 100%);
+    color: #FFFFFF !important;
+    border-color: var(--color-enji);
+}
+
+.btn-miyabi-enji:hover {
+    background: linear-gradient(135deg, #76161f 0%, #5f1118 100%);
+    color: #FFFFFF !important;
+    box-shadow: 0 6px 18px rgba(140, 29, 39, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-miyabi-gold {
+    background: linear-gradient(135deg, var(--color-kinjiki) 0%, #ab8947 100%);
+    color: #FFFFFF !important;
+    border-color: var(--color-kinjiki);
+}
+
+.btn-miyabi-gold:hover {
+    background: linear-gradient(135deg, #b08d46 0%, #947537 100%);
+    color: #FFFFFF !important;
+    box-shadow: 0 6px 18px rgba(197, 160, 89, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-miyabi-outline {
+    background-color: #FFFFFF;
+    color: var(--color-sumi);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.btn-miyabi-outline:hover {
+    background-color: var(--surface);
+    border-color: var(--color-border-hover);
+    color: var(--color-enji);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.btn-miyabi-outline.text-danger {
+    color: #8C1D27 !important;
+    border-color: rgba(140, 29, 39, 0.25);
+}
+
+.btn-miyabi-outline.text-danger:hover {
+    background-color: rgba(140, 29, 39, 0.08) !important;
+    border-color: #8C1D27 !important;
+    color: #72161E !important;
+    box-shadow: 0 4px 14px rgba(140, 29, 39, 0.15);
+}
+
+.btn-miyabi-sm {
+    padding: 7px 15px;
+    font-size: 12.5px;
+    border-radius: 6px;
+}
+
+/* Modales & Formularios */
+.modal-actions button, .modal-footer button {
+    border-radius: 6px;
+    padding: 9px 20px;
+    font-size: 13px;
+}
+
+/* Redefinición de botones por omisión en tarjetas */
+.card-actions button, .btn-group button {
+    font-family: var(--font-sans);
+}
+

@@ -6,7 +6,12 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.currentUser().isLoggedIn) {
+  let session = authService.currentUser();
+  if (!session.isLoggedIn) {
+    session = authService.getInitialSession();
+  }
+
+  if (session.isLoggedIn) {
     return true;
   }
 
@@ -17,7 +22,11 @@ export const authGuard: CanActivateFn = (route, state) => {
 export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const session = authService.currentUser();
+
+  let session = authService.currentUser();
+  if (!session.isLoggedIn) {
+    session = authService.getInitialSession();
+  }
 
   if (session.isLoggedIn && session.role && session.role !== 'GUEST') {
     return true;

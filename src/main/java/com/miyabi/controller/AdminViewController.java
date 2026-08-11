@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.miyabi.service.RoomService;
 import com.miyabi.service.UserService;
 import com.miyabi.service.RoomTypeService;
+import com.miyabi.service.AccessLogService;
 import com.miyabi.repository.ReservationRepository; 
 
 /**
@@ -24,6 +25,7 @@ public class AdminViewController {
     private final RoomService roomService;
     private final UserService userService;
     private final RoomTypeService roomTypeService;
+    private final AccessLogService accessLogService;
     private final ReservationRepository reservationRepository; 
 
     /**
@@ -33,10 +35,12 @@ public class AdminViewController {
     public AdminViewController(RoomService roomService, 
                                UserService userService, 
                                RoomTypeService roomTypeService,
+                               AccessLogService accessLogService,
                                ReservationRepository reservationRepository) {
         this.roomService = roomService;
         this.userService = userService;
         this.roomTypeService = roomTypeService;
+        this.accessLogService = accessLogService;
         this.reservationRepository = reservationRepository;
     }
 
@@ -73,6 +77,16 @@ public class AdminViewController {
         model.addAttribute("listUsers", userService.findAll());
         return "admin/users"; 
     }
+
+    /**
+     * Endpoint GET: /admin/movements
+     * Carga la vista dedicada de Historial de Movimientos y Auditoría de Accesos.
+     */
+    @GetMapping("/movements")
+    public String viewMovements(Model model) {
+        model.addAttribute("listLogs", accessLogService.findAll());
+        return "admin/movements";
+    }
     
     /**
      * Endpoint GET: /admin/dashboard
@@ -90,7 +104,8 @@ public class AdminViewController {
         model.addAttribute("activeCount", reservationRepository.countByState("Confirmed"));
         model.addAttribute("totalRooms", roomService.findAll().size());
         
-        // 3. Obtiene las últimas 5 reservas (ordenadas de forma descendente por ID) para la tabla de actividad reciente
+        // 3. Obtiene los últimos movimientos reales del sistema
+        model.addAttribute("recentLogs", accessLogService.findRecentLogs());
         model.addAttribute("recentReservations", reservationRepository.findTop5ByOrderByReservationIdDesc());
         
         // Retorna la vista templates/admin/dashboard.html con todos los datos inyectados

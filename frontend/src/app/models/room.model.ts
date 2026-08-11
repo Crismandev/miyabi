@@ -1,4 +1,5 @@
 export interface RoomType {
+  idTipo?: number;
   idTipoHabitacion?: number;
   nameType: string;
   description?: string;
@@ -11,6 +12,7 @@ export interface RoomType {
 }
 
 export interface Room {
+  idRoom?: number;
   idHabitacion?: number;
   roomNumber: string;
   floor: number;

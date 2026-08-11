@@ -13,9 +13,17 @@ import com.miyabi.models.AccessLog;
 public interface AccessLogRepository extends JpaRepository<AccessLog, Integer> {
     
     /**
-     * Al heredar de JpaRepository<AccessLog, Integer>, ya tenemos disponibles métodos como:
-     * - save(accessLog): Para registrar un nuevo inicio de sesión.
-     * - findAll(): Para obtener el historial completo de accesos (auditoría).
-     * - findById(id): Para buscar un registro específico por su ID.
+     * Obtiene los últimos 10 registros de acceso ordenados descendentemente por ID.
      */
+    java.util.List<AccessLog> findTop10ByOrderByIdAccessDesc();
+
+    /**
+     * Obtiene todos los registros de acceso ordenados descendentemente por ID.
+     */
+    java.util.List<AccessLog> findAllByOrderByIdAccessDesc();
+
+    /**
+     * Elimina todos los registros de acceso pertenecientes a un usuario.
+     */
+    void deleteByUser_IdUsuario(Integer idUsuario);
 }

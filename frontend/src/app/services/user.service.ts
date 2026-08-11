@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Rol {
+  idRol?: number;
   rolId?: number;
   nameRol: string;
   description?: string;
@@ -10,6 +11,7 @@ export interface Rol {
 
 export interface UserStaff {
   idUsuario?: number;
+  idUser?: number;
   names: string;
   surnames: string;
   email: string;

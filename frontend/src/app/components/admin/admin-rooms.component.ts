@@ -40,6 +40,11 @@ import { Room, RoomType } from '../../models/room.model';
               <i class="bi bi-people-fill"></i> Personal
             </a>
           </li>
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/movements" class="nav-link-miyabi">
+              <i class="bi bi-clock-history"></i> Movimientos
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -99,7 +104,7 @@ import { Room, RoomType } from '../../models/room.model';
               </tr>
             </thead>
             <tbody>
-              @for (r of filteredRooms; track r.idHabitacion) {
+              @for (r of filteredRooms; track getRoomId(r)) {
                 <tr>
                   <td>
                     <div class="d-flex align-items-center gap-2">
@@ -107,8 +112,8 @@ import { Room, RoomType } from '../../models/room.model';
                     </div>
                   </td>
                   <td>
-                    <div class="fw-semibold text-dark">{{ r.roomType.nameType }}</div>
-                    <div class="text-muted small">{{ r.roomType.description || 'Suite tradicional con vista al jardín' }}</div>
+                    <div class="fw-semibold text-dark">{{ r.roomType ? r.roomType.nameType : 'Suite Ryokan' }}</div>
+                    <div class="text-muted small">{{ r.roomType?.description || 'Suite tradicional con vista al jardín' }}</div>
                   </td>
                   <td>
                     <span class="miyabi-badge" [ngClass]="getBadgeClass(r.state)">
@@ -116,14 +121,14 @@ import { Room, RoomType } from '../../models/room.model';
                     </span>
                   </td>
                   <td>
-                    <span class="price-tabular">S/ {{ r.roomType.basePrice | number:'1.2-2' }}</span>
+                    <span class="price-tabular">S/ {{ (r.roomType?.basePrice || 150) | number:'1.2-2' }}</span>
                   </td>
                   <td class="text-end">
                     <div class="btn-group">
                       <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm me-1" (click)="openEditModal(r)">
                         <i class="bi bi-pencil"></i> Editar
                       </button>
-                      <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" (click)="deleteRoom(r.idHabitacion!)">
+                      <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" (click)="deleteRoom(getRoomId(r))">
                         <i class="bi bi-trash"></i> Eliminar
                       </button>
                     </div>
@@ -172,8 +177,8 @@ import { Room, RoomType } from '../../models/room.model';
             <div class="form-group">
               <label>Categoría / Tipo de Habitación</label>
               <select [(ngModel)]="selectedTypeId" name="selectedTypeId" required>
-                @for (type of roomTypes; track type.idTipoHabitacion) {
-                  <option [value]="type.idTipoHabitacion">{{ type.nameType }} (S/ {{ type.basePrice }})</option>
+                @for (type of roomTypes; track getTypeId(type)) {
+                  <option [value]="getTypeId(type)">{{ type.nameType }} (S/ {{ type.basePrice }})</option>
                 }
               </select>
             </div>
@@ -221,10 +226,18 @@ export class AdminRoomsComponent implements OnInit {
     this.loadData();
   }
 
+  getRoomId(room: Room): number {
+    return room.idRoom || room.idHabitacion || 0;
+  }
+
+  getTypeId(type: RoomType): number {
+    return type.idTipo || type.idTipoHabitacion || 0;
+  }
+
   loadData() {
     this.roomService.getAllRoomTypes().subscribe(types => {
       this.roomTypes = types;
-      if (types.length > 0) this.selectedTypeId = types[0].idTipoHabitacion || 1;
+      if (types.length > 0) this.selectedTypeId = this.getTypeId(types[0]) || 1;
     });
 
     this.roomService.getAllRooms().subscribe({
@@ -233,11 +246,11 @@ export class AdminRoomsComponent implements OnInit {
         this.filteredRooms = [...data];
       },
       error: () => {
-        const mockType = { idTipoHabitacion: 1, nameType: 'Suite Ryokan Sora', basePrice: 450, capacityAdults: 2, capacityChildren: 1, hasOnsen: true, viewType: 'Jardín' };
+        const mockType = { idTipo: 1, idTipoHabitacion: 1, nameType: 'Suite Ryokan Sora', basePrice: 450, capacityAdults: 2, capacityChildren: 1, hasOnsen: true, viewType: 'Jardín' };
         this.rooms = [
-          { idHabitacion: 101, roomNumber: '101', floor: 1, state: 'Available', roomType: mockType },
-          { idHabitacion: 102, roomNumber: '102', floor: 1, state: 'Occupied', roomType: mockType },
-          { idHabitacion: 201, roomNumber: '201', floor: 2, state: 'Available', roomType: mockType }
+          { idRoom: 101, idHabitacion: 101, roomNumber: '101', floor: 1, state: 'Available', roomType: mockType },
+          { idRoom: 102, idHabitacion: 102, roomNumber: '102', floor: 1, state: 'Occupied', roomType: mockType },
+          { idRoom: 201, idHabitacion: 201, roomNumber: '201', floor: 2, state: 'Available', roomType: mockType }
         ];
         this.filteredRooms = [...this.rooms];
       }
@@ -247,7 +260,7 @@ export class AdminRoomsComponent implements OnInit {
   filterRooms() {
     const q = this.searchQuery.toLowerCase();
     this.filteredRooms = this.rooms.filter(r =>
-      !q || r.roomNumber.toLowerCase().includes(q) || r.roomType.nameType.toLowerCase().includes(q)
+      !q || r.roomNumber.toLowerCase().includes(q) || (r.roomType && r.roomType.nameType.toLowerCase().includes(q))
     );
   }
 
@@ -269,40 +282,48 @@ export class AdminRoomsComponent implements OnInit {
   openEditModal(room: Room) {
     this.isEditMode = true;
     this.currentRoom = { ...room };
-    this.selectedTypeId = room.roomType.idTipoHabitacion || 1;
+    if (room.roomType) {
+      this.selectedTypeId = this.getTypeId(room.roomType) || 1;
+    }
     this.showModal = true;
   }
 
   saveRoom() {
-    const selectedType = this.roomTypes.find(t => t.idTipoHabitacion == this.selectedTypeId) || this.roomTypes[0];
+    const selectedType = this.roomTypes.find(t => this.getTypeId(t) == this.selectedTypeId) || this.roomTypes[0];
+    const roomId = this.getRoomId(this.currentRoom as Room);
     const roomToSave: Room = {
-      idHabitacion: this.currentRoom.idHabitacion,
+      idRoom: roomId || undefined,
+      idHabitacion: roomId || undefined,
       roomNumber: this.currentRoom.roomNumber || '101',
       floor: this.currentRoom.floor || 1,
       state: (this.currentRoom.state as any) || 'Available',
       roomType: selectedType
     };
 
-    if (this.isEditMode && roomToSave.idHabitacion) {
-      this.roomService.updateRoom(roomToSave.idHabitacion, roomToSave).subscribe({
+    if (this.isEditMode && roomId) {
+      this.roomService.updateRoom(roomId, roomToSave).subscribe({
         next: () => { this.showModal = false; this.loadData(); },
-        error: () => { this.showModal = false; }
+        error: () => { this.showModal = false; this.loadData(); }
       });
     } else {
       this.roomService.createRoom(roomToSave).subscribe({
         next: () => { this.showModal = false; this.loadData(); },
-        error: () => { this.showModal = false; }
+        error: () => { this.showModal = false; this.loadData(); }
       });
     }
   }
 
   deleteRoom(id: number) {
-    if (confirm('¿Está seguro de eliminar la habitación?')) {
+    if (!id) return;
+    if (confirm('¿Está seguro de eliminar esta habitación del catálogo y de la base de datos real?')) {
       this.roomService.deleteRoom(id).subscribe({
-        next: () => this.loadData(),
-        error: () => {
-          this.rooms = this.rooms.filter(r => r.idHabitacion !== id);
-          this.filterRooms();
+        next: () => {
+          this.loadData();
+        },
+        error: (err) => {
+          console.error('Error al eliminar habitación:', err);
+          alert('Error al eliminar de la base de datos: ' + (err.error?.message || err.message || 'Error del servidor'));
+          this.loadData();
         }
       });
     }

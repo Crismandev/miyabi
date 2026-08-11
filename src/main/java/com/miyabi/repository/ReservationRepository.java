@@ -21,6 +21,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
     List<Reservation> findByGuest_IdGuest(Integer idGuest);
 
     /**
+     * Obtiene las reservas asociadas a una habitación específica.
+     */
+    List<Reservation> findByRoom_IdRoom(Integer idRoom);
+
+    /**
      * Busca una reserva por su código público (Ej. RES-2026-X).
      * Vital para la búsqueda rápida en recepción o validación de vouchers.
      */

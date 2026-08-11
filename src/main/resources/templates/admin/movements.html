@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miyabi | Historial de Movimientos y Auditoría</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Hojas de estilo Ryokan globales y admin -->
+    <link rel="stylesheet" th:href="@{/css/base/global.css}">
+    <link rel="stylesheet" th:href="@{/css/base/admin.css}">
+</head>
+<body class="miyabi-admin-body">
+
+    <!-- Navbar Administrativa Reutilizable Ryokan -->
+    <div th:replace="~{fragments/admin-navbar :: adminNavbar('movements')}"></div>
+
+    <!-- Contenedor Principal Auditoría -->
+    <main class="miyabi-admin-container">
+        
+        <!-- Encabezado de Página -->
+        <div class="miyabi-page-header">
+            <div>
+                <h1 class="miyabi-page-title">Historial de Movimientos & Auditoría</h1>
+                <p class="miyabi-page-subtitle">Registro cronológico detallado de inicios de sesión, accesos al sistema y actividades en tiempo real.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="miyabi-badge badge-active fs-6" th:text="${#lists.size(listLogs)} + ' Eventos Registrados'">0 Eventos</span>
+            </div>
+        </div>
+
+        <!-- Tabla Ryokan de Movimientos -->
+        <div class="miyabi-card-table">
+            <div class="miyabi-card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <h2 class="miyabi-card-title">
+                        <i class="bi bi-clock-history me-2" style="color: var(--color-kinjiki);"></i>Bitácora General de Accesos
+                    </h2>
+                </div>
+
+                <!-- Buscador e Interacción Filtros -->
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Filtros de Tipo">
+                        <button type="button" class="btn btn-outline-secondary active" id="btnFilterAll" onclick="filterType('ALL')">Todos</button>
+                        <button type="button" class="btn btn-outline-secondary" id="btnFilterStaff" onclick="filterType('STAFF')">Personal</button>
+                        <button type="button" class="btn btn-outline-secondary" id="btnFilterGuest" onclick="filterType('GUEST')">Clientes</button>
+                    </div>
+
+                    <div class="table-search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="logSearchInput" placeholder="Buscar por usuario, correo, IP o rol...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="miyabi-table" id="movementsTable">
+                    <thead>
+                        <tr>
+                            <th>Nº ID Log</th>
+                            <th>Usuario / Cuenta</th>
+                            <th>Rol / Categoría</th>
+                            <th>Dirección IP</th>
+                            <th>Fecha & Hora de Conexión</th>
+                            <th class="text-end">Estado Auditoría</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="l : ${listLogs}" th:data-type="${l.userType}">
+                            <td>
+                                <span class="code-identifier fs-6" th:text="'#LOG-' + ${l.idAccess}">#LOG-1</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" 
+                                         style="width: 38px; height: 38px; background: linear-gradient(135deg, var(--color-enji) 0%, var(--color-kinjiki) 100%); font-family: var(--font-serif); font-size: 16px;">
+                                        <span th:text="${l.user != null ? #strings.substring(l.user.names, 0, 1) : (l.guest != null ? #strings.substring(l.guest.names, 0, 1) : 'U')}">U</span>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-capitalize fs-6 text-dark" 
+                                             th:text="${l.user != null ? l.user.names + ' ' + l.user.surnames : (l.guest != null ? l.guest.names + ' ' + l.guest.surnames : 'Usuario de Sistema')}">Nombre Completo</div>
+                                        <div class="text-muted small" 
+                                             th:text="${l.user != null ? l.user.email : (l.guest != null ? l.guest.email : '-')}">correo@hotel.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span th:class="${l.userType == 'STAFF' ? 'miyabi-badge badge-confirmed' : 'miyabi-badge badge-active'}">
+                                    <i th:class="${l.userType == 'STAFF' ? 'bi bi-shield-lock-fill me-1' : 'bi bi-person-circle me-1'}"></i>
+                                    [[${l.userType == 'STAFF' ? (l.user?.rol?.nameRol != null ? l.user.rol.nameRol : 'Personal') : 'Cliente / Huésped'}]]
+                                </span>
+                            </td>
+                            <td>
+                                <span class="code-identifier fs-6 text-dark">
+                                    <i class="bi bi-hdd-network me-1 text-muted"></i>
+                                    [[${l.ipAccess != null ? l.ipAccess : '127.0.0.1'}]]
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">
+                                    <i class="bi bi-calendar-event me-1 text-muted"></i>
+                                    <span th:text="${l.accessDate != null ? #temporals.format(l.accessDate, 'dd/MM/yyyy HH:mm:ss') : 'Reciente'}">01/01/2026 12:00:00</span>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <span class="miyabi-badge badge-confirmed">
+                                    <i class="bi bi-check-all me-1"></i>Verificado
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(listLogs)}">
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-clock-history fs-2 d-block mb-2 text-muted opacity-50"></i>
+                                No hay registros de movimientos en el sistema.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script de Búsqueda y Filtrado Dinámico -->
+    <script>
+        let currentFilter = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('logSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', applyFilters);
+            }
+        });
+
+        function filterType(type) {
+            currentFilter = type;
+            document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+            if (type === 'ALL') document.getElementById('btnFilterAll').classList.add('active');
+            if (type === 'STAFF') document.getElementById('btnFilterStaff').classList.add('active');
+            if (type === 'GUEST') document.getElementById('btnFilterGuest').classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchVal = (document.getElementById('logSearchInput').value || '').toLowerCase();
+            const rows = document.querySelectorAll('#movementsTable tbody tr');
+
+            rows.forEach(row => {
+                const dataType = row.getAttribute('data-type');
+                const rowText = row.innerText.toLowerCase();
+
+                const matchesType = (currentFilter === 'ALL') || (dataType === currentFilter);
+                const matchesSearch = !searchVal || rowText.includes(searchVal);
+
+                if (matchesType && matchesSearch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

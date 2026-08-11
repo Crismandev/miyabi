@@ -74,4 +74,27 @@ public class RoomController {
     public Room createRoom(@RequestBody Room room) {
         return roomService.save(room);
     }
+
+    /**
+     * Endpoint PUT: /api/rooms/{id}
+     * Permite actualizar la información de una habitación existente.
+     * @param id Identificador de la habitación a actualizar.
+     * @param roomDetails Objeto con la información modificada.
+     * @return La habitación actualizada.
+     */
+    @PutMapping("/{id}")
+    public Room updateRoom(@PathVariable Integer id, @RequestBody Room roomDetails) {
+        roomDetails.setIdRoom(id);
+        return roomService.save(roomDetails);
+    }
+
+    /**
+     * Endpoint DELETE: /api/rooms/{id}
+     * Permite eliminar una habitación del inventario por su ID.
+     * @param id Identificador de la habitación a eliminar.
+     */
+    @DeleteMapping("/{id}")
+    public void deleteRoom(@PathVariable Integer id) {
+        roomService.deleteById(id);
+    }
 }

@@ -74,7 +74,7 @@ import { HttpClient } from '@angular/common/http';
 
       <!-- Catálogo Grid de Categorías & Tarifas -->
       <div class="types-grid">
-        @for (t of roomTypes; track t.idTipoHabitacion) {
+        @for (t of roomTypes; track getTypeId(t)) {
           <div class="suite-card">
             <div class="suite-img-wrapper">
               <img [src]="t.primaryImage || 'https://be.synxis.com/shs-ngbe-image-resizer/images/hotel/23382/images/medium/room/japanese_premier_0002.jpg'" class="suite-img" alt="Suite" />
@@ -95,7 +95,7 @@ import { HttpClient } from '@angular/common/http';
                 <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm" (click)="openEditModal(t)">
                   <i class="bi bi-pencil"></i> Editar
                 </button>
-                <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" (click)="deleteType(t.idTipoHabitacion!)">
+                <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" (click)="deleteType(getTypeId(t))">
                   <i class="bi bi-trash"></i> Eliminar
                 </button>
               </div>
@@ -245,13 +245,17 @@ export class AdminRoomTypesComponent implements OnInit {
     this.loadData();
   }
 
+  getTypeId(type: RoomType): number {
+    return type.idTipo || type.idTipoHabitacion || 0;
+  }
+
   loadData() {
     this.roomService.getAllRoomTypes().subscribe({
       next: (data) => this.roomTypes = data,
       error: () => {
         this.roomTypes = [
-          { idTipoHabitacion: 1, nameType: 'Suite Ryokan Sora', description: 'Habitación con futón de seda tradicional y Onsen privado al aire libre.', basePrice: 450, capacityAdults: 2, capacityChildren: 1, hasOnsen: true, viewType: 'Jardín Zen' },
-          { idTipoHabitacion: 2, nameType: 'Habitación Tatami Mizu', description: 'Suite amplia con suelos de Tatami y bañera de madera Hinoki.', basePrice: 320, capacityAdults: 2, capacityChildren: 2, hasOnsen: false, viewType: 'Bosque de Bambú' }
+          { idTipo: 1, idTipoHabitacion: 1, nameType: 'Suite Ryokan Sora', description: 'Habitación con futón de seda tradicional y Onsen privado al aire libre.', basePrice: 450, capacityAdults: 2, capacityChildren: 1, hasOnsen: true, viewType: 'Jardín Zen' },
+          { idTipo: 2, idTipoHabitacion: 2, nameType: 'Habitación Tatami Mizu', description: 'Suite amplia con suelos de Tatami y bañera de madera Hinoki.', basePrice: 320, capacityAdults: 2, capacityChildren: 2, hasOnsen: false, viewType: 'Bosque de Bambú' }
         ];
       }
     });
@@ -271,8 +275,9 @@ export class AdminRoomTypesComponent implements OnInit {
 
   saveType() {
     const apiUrl = 'http://localhost:8080/api/room-types';
-    if (this.isEditMode && this.currentType.idTipoHabitacion) {
-      this.http.put(`${apiUrl}/${this.currentType.idTipoHabitacion}`, this.currentType, { withCredentials: true }).subscribe({
+    const typeId = this.getTypeId(this.currentType as RoomType);
+    if (this.isEditMode && typeId) {
+      this.http.put(`${apiUrl}/${typeId}`, this.currentType, { withCredentials: true }).subscribe({
         next: () => { this.showModal = false; this.loadData(); },
         error: () => { this.showModal = false; }
       });
@@ -285,11 +290,16 @@ export class AdminRoomTypesComponent implements OnInit {
   }
 
   deleteType(id: number) {
-    if (confirm('¿Está seguro de eliminar esta categoría de suite?')) {
+    if (!id) return;
+    if (confirm('¿Está seguro de eliminar esta categoría de suite y sus datos vinculados en la base de datos real?')) {
       this.http.delete(`http://localhost:8080/api/room-types/${id}`, { withCredentials: true }).subscribe({
-        next: () => this.loadData(),
-        error: () => {
-          this.roomTypes = this.roomTypes.filter(t => t.idTipoHabitacion !== id);
+        next: () => {
+          this.loadData();
+        },
+        error: (err) => {
+          console.error('Error al eliminar tipo de habitación:', err);
+          alert('Error al eliminar en la base de datos: ' + (err.error?.message || err.message || 'Error del servidor'));
+          this.loadData();
         }
       });
     }

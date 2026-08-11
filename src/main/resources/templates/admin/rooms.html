@@ -97,10 +97,10 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-group">
-                                    <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm me-1" title="Editar Habitación">
+                                    <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm me-1" th:onclick="'editRoom(' + ${r.idHabitacion} + ')'" title="Editar Habitación">
                                         <i class="bi bi-pencil"></i> Editar
                                     </button>
-                                    <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" title="Eliminar Habitación">
+                                    <button class="btn-miyabi btn-miyabi-outline btn-miyabi-sm text-danger" th:onclick="'deleteRoom(' + ${r.idHabitacion} + ')'" title="Eliminar Habitación">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -163,9 +163,13 @@
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Script de Búsqueda Dinámica en Tiempo Real -->
-    <script>
+    <!-- Script de Gestión CRUD e Interacción REST -->
+    <script th:inline="javascript">
+        let modalRoomInstance;
+
         document.addEventListener('DOMContentLoaded', () => {
+            modalRoomInstance = new bootstrap.Modal(document.getElementById('modalRoom'));
+
             const searchInput = document.getElementById('roomSearchInput');
             if (searchInput) {
                 searchInput.addEventListener('keyup', () => {
@@ -177,7 +181,78 @@
                     });
                 });
             }
+
+            const formRoom = document.getElementById('formRoom');
+            if (formRoom) {
+                formRoom.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    saveRoom();
+                });
+            }
         });
+
+        function prepareNewRoom() {
+            document.getElementById('modalRoomLabel').innerText = "Registrar Habitación";
+            document.getElementById('roomId').value = "";
+            document.getElementById('formRoom').reset();
+            modalRoomInstance.show();
+        }
+
+        function editRoom(id) {
+            fetch('/api/rooms/' + id)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('modalRoomLabel').innerText = "Editar Habitación";
+                    document.getElementById('roomId').value = data.idHabitacion || id;
+                    document.getElementById('roomNumber').value = data.roomNumber || '';
+                    document.getElementById('roomState').value = data.state || 'Available';
+                    if (data.roomType) {
+                        document.getElementById('roomTypeId').value = data.roomType.idTipo || data.roomType.idTipoHabitacion;
+                    }
+                    modalRoomInstance.show();
+                });
+        }
+
+        function saveRoom() {
+            const id = document.getElementById('roomId').value;
+            const typeId = document.getElementById('roomTypeId').value;
+
+            const roomData = {
+                roomNumber: document.getElementById('roomNumber').value,
+                state: document.getElementById('roomState').value,
+                roomType: { idTipo: typeId }
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/rooms/${id}` : '/api/rooms';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(roomData)
+            })
+            .then(res => {
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al guardar la habitación. Verifique los datos.');
+                }
+            });
+        }
+
+        function deleteRoom(id) {
+            if (confirm('¿Está seguro de eliminar esta habitación? Esta acción afectará el inventario del hotel.')) {
+                fetch('/api/rooms/' + id, { method: 'DELETE' })
+                    .then(res => {
+                        if (res.ok) {
+                            location.reload();
+                        } else {
+                            alert('No se pudo eliminar la habitación.');
+                        }
+                    })
+                    .catch(() => alert('Error en la comunicación con el servidor.'));
+            }
+        }
     </script>
 </body>
 </html>

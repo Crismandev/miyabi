@@ -3,10 +3,13 @@ package com.miyabi.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import com.miyabi.models.AccessLog;
 import com.miyabi.models.Guest;
 import com.miyabi.models.User;
+import com.miyabi.service.AccessLogService;
 import com.miyabi.service.GuestService;
 import com.miyabi.service.UserService;
 
@@ -23,13 +26,15 @@ public class AuthController {
 
     private final GuestService guestService;
     private final UserService userService;
+    private final AccessLogService accessLogService;
 
     /**
      * Constructor para la Inyección de Dependencias.
      */
-    public AuthController(GuestService guestService, UserService userService) {
+    public AuthController(GuestService guestService, UserService userService, AccessLogService accessLogService) {
         this.guestService = guestService;
         this.userService = userService;
+        this.accessLogService = accessLogService;
     }
 
     /**
@@ -37,7 +42,7 @@ public class AuthController {
      * Autentica tanto a Huéspedes como a Personal del Hotel (Admin / Recepcionista).
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, HttpSession session, HttpServletRequest request) {
         String email = credentials.get("email"); 
         String password = credentials.get("password");
 
@@ -46,6 +51,10 @@ public class AuthController {
         }
 
         String cleanEmail = email.trim();
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
+            clientIp = request.getRemoteAddr();
+        }
 
         // 1. Validar autenticación como Huésped (Guest)
         Guest authenticatedGuest = guestService.authenticate(cleanEmail, password);
@@ -53,6 +62,13 @@ public class AuthController {
         if (authenticatedGuest != null) {
             session.setAttribute("guestId", authenticatedGuest.getIdGuest());
             
+            // Registrar log de acceso
+            AccessLog log = new AccessLog();
+            log.setUserType("GUEST");
+            log.setGuest(authenticatedGuest);
+            log.setIpAccess(clientIp);
+            accessLogService.save(log);
+
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login exitoso");
             response.put("guestName", authenticatedGuest.getNames() + " " + authenticatedGuest.getSurnames());
@@ -68,6 +84,13 @@ public class AuthController {
         if (authenticatedUser != null) {
             session.setAttribute("userId", authenticatedUser.getIdUsuario());
             session.setAttribute("userRole", authenticatedUser.getRol() != null ? authenticatedUser.getRol().getNameRol() : "ADMIN");
+
+            // Registrar log de acceso
+            AccessLog log = new AccessLog();
+            log.setUserType("STAFF");
+            log.setUser(authenticatedUser);
+            log.setIpAccess(clientIp);
+            accessLogService.save(log);
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login exitoso como Personal");
