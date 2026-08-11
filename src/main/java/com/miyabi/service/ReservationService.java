@@ -12,13 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.miyabi.models.Guest;
 import com.miyabi.models.Reservation;
 import com.miyabi.models.Room;
+import com.miyabi.repository.ConsumptionRepository;
 import com.miyabi.repository.GuestRepository;
+import com.miyabi.repository.PaymentsRepository;
 import com.miyabi.repository.ReservationRepository;
 
 /**
  * Servicio principal del sistema Miyabi.
- * Orquestra la creación de reservas, validando disponibilidad, 
- * capacidad de personas y cálculos financieros.
+ * Orquestra la creación y gestión de reservas.
  */
 @Service
 public class ReservationService {
@@ -27,13 +28,21 @@ public class ReservationService {
     private final RoomService roomService;
     private final GuestService guestService;
     private final GuestRepository guestRepository;
+    private final PaymentsRepository paymentsRepository;
+    private final ConsumptionRepository consumptionRepository;
 
-    // Inyección de dependencias: se comunica con habitaciones y huéspedes para validar datos.
-    public ReservationService(ReservationRepository reservationRepository, RoomService roomService, GuestService guestService, GuestRepository guestRepository) {
+    public ReservationService(ReservationRepository reservationRepository, 
+                              RoomService roomService, 
+                              GuestService guestService, 
+                              GuestRepository guestRepository,
+                              PaymentsRepository paymentsRepository,
+                              ConsumptionRepository consumptionRepository) {
         this.reservationRepository = reservationRepository;
         this.roomService = roomService;
         this.guestService = guestService;
         this.guestRepository = guestRepository;
+        this.paymentsRepository = paymentsRepository;
+        this.consumptionRepository = consumptionRepository;
     }
 
     public List<Reservation> findAll() {
@@ -44,22 +53,12 @@ public class ReservationService {
         return reservationRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Recupera las reservas de un huésped específico.
-     */
     public List<Reservation> findByGuest_IdGuest(Integer idGuest) {
         return reservationRepository.findByGuest_IdGuest(idGuest);
     }
 
-    /**
-     * LÓGICA DE NEGOCIO PRINCIPAL: Creación de Reservas.
-     * @Transactional asegura que si algo falla (ej. la habitación no existe), 
-     * no se guarde nada a medias en la base de datos (Atomicidad).
-     */
     @Transactional
     public Reservation createReservation(Reservation reservation) {
-
-        // 1. VALIDACIÓN Y ACTUALIZACIÓN DEL CLIENTE
         Guest existingGuest = null;
 
         if (reservation.getGuest() != null && reservation.getGuest().getIdGuest() != null && reservation.getGuest().getIdGuest() > 0) {
@@ -94,7 +93,6 @@ public class ReservationService {
             throw new RuntimeException("La reserva debe estar asociada a un cliente logueado.");
         }
 
-        // 2. VALIDACIÓN DE CAPACIDAD
         int adults = reservation.getNumAdults() != null ? reservation.getNumAdults() : 1;
         int children = reservation.getNumChildren() != null ? reservation.getNumChildren() : 0;
         int totalGuests = adults + children;
@@ -106,72 +104,91 @@ public class ReservationService {
             throw new RuntimeException("Debe haber al menos 1 adulto en la reserva.");
         }
 
-        // 3. VALIDACIÓN DE HABITACIÓN Y CÁLCULOS
         Room roomToReserve = roomService.findById(reservation.getRoom().getIdRoom());
         if (roomToReserve == null) {
             throw new RuntimeException("La habitación no existe.");
         }
 
-        // Cálculo automático de noches y subtotales
         long nights = ChronoUnit.DAYS.between(reservation.getEntryDate(), reservation.getDepartureDate());
+        if (nights <= 0) nights = 1;
         reservation.setNumberNights((int) nights);
 
         BigDecimal nightsDecimal = new BigDecimal(nights);
-        BigDecimal subtotal = reservation.getPricePerNight().multiply(nightsDecimal);
+        BigDecimal pricePerNight = reservation.getPricePerNight() != null ? reservation.getPricePerNight() : (roomToReserve.getRoomType() != null ? roomToReserve.getRoomType().getBasePrice() : new BigDecimal("150.00"));
+        reservation.setPricePerNight(pricePerNight);
+        BigDecimal subtotal = pricePerNight.multiply(nightsDecimal);
         reservation.setRoomSubtotal(subtotal);
-        reservation.setTotalPay(subtotal); // Monto inicial sin consumos extras
+        reservation.setTotalPay(subtotal);
 
-        // 4. IDENTIFICACIÓN ÚNICA
-        // Generamos un código corto y legible para el cliente (Ej: RES-A1B2C3)
         String code = "RES-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         reservation.setReservationCode(code);
-        reservation.setState("Pending");
+        if (reservation.getState() == null || reservation.getState().isBlank()) {
+            reservation.setState("Pending");
+        }
 
         return reservationRepository.save(reservation);
     }
-    
-    /**
-     * Adaptador para procesar datos provenientes de peticiones AJAX/JSON (Frontend).
-     */
+
     public Reservation createReservationFromMap(Map<String, Object> payload) {
         Reservation res = new Reservation();
 
         res.setEntryDate(LocalDate.parse((String) payload.get("entryDate")));
         res.setDepartureDate(LocalDate.parse((String) payload.get("departureDate")));
         res.setPricePerNight(new BigDecimal(payload.get("pricePerNight").toString()));
-        res.setNumAdults((Integer) payload.get("numAdults"));
+        res.setNumAdults(payload.get("numAdults") != null ? (Integer) payload.get("numAdults") : 1);
         res.setObservations((String) payload.get("observations"));
 
-        // Mapeo manual del objeto Guest desde el Map
         Map<String, Object> guestMap = (Map<String, Object>) payload.get("guest");
         Guest guest = new Guest();
-        guest.setIdGuest((Integer) guestMap.get("idGuest"));
-        guest.setPhone((String) guestMap.get("phone"));
-        guest.setMobilePhone((String) guestMap.get("mobilePhone"));
-        guest.setAddress((String) guestMap.get("address"));
-        guest.setCountry((String) guestMap.get("country"));
-        guest.setCity((String) guestMap.get("city"));
-        guest.setPostalCode((String) guestMap.get("postalCode"));
+        if (guestMap != null && guestMap.get("idGuest") != null) {
+            guest.setIdGuest((Integer) guestMap.get("idGuest"));
+        }
         res.setGuest(guest);
 
-        // Mapeo de la habitación
         Map<String, Object> roomMap = (Map<String, Object>) payload.get("room");
         Room room = new Room();
-        room.setIdRoom((Integer) roomMap.get("idRoom"));
+        if (roomMap != null && roomMap.get("idRoom") != null) {
+            room.setIdRoom((Integer) roomMap.get("idRoom"));
+        }
         res.setRoom(room);
 
         return this.createReservation(res);
     }
 
-    public Reservation saveFromEmployee(Reservation reservation) {
-        return reservationRepository.save(reservation);
+    @Transactional
+    public Reservation updateReservation(Integer id, Reservation details) {
+        Reservation existing = findById(id);
+        if (existing != null) {
+            if (details.getState() != null && !details.getState().isBlank()) {
+                existing.setState(details.getState());
+            }
+            if (details.getObservations() != null) {
+                existing.setObservations(details.getObservations());
+            }
+            if (details.getEntryDate() != null) {
+                existing.setEntryDate(details.getEntryDate());
+            }
+            if (details.getDepartureDate() != null) {
+                existing.setDepartureDate(details.getDepartureDate());
+            }
+            return reservationRepository.save(existing);
+        }
+        return null;
     }
 
+    @Transactional
     public void deleteById(Integer id) {
+        if (id == null) return;
+        paymentsRepository.deleteByReservation_ReservationId(id);
+        consumptionRepository.deleteByReservation_ReservationId(id);
         reservationRepository.deleteById(id);
     }
 
     public Reservation findByCode(String code) {
         return reservationRepository.findByReservationCode(code);
+    }
+
+    public Reservation saveFromEmployee(Reservation reservation) {
+        return reservationRepository.save(reservation);
     }
 }

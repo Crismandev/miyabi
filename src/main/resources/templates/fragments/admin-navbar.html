@@ -36,6 +36,20 @@
                 </a>
             </li>
             <li class="miyabi-admin-nav-item">
+                <a th:href="@{/admin/reservations}" 
+                   class="nav-link-miyabi" 
+                   th:classappend="${activeTab == 'reservations' ? 'active' : ''}">
+                    <i class="bi bi-calendar-check-fill"></i> Reservas
+                </a>
+            </li>
+            <li class="miyabi-admin-nav-item">
+                <a th:href="@{/admin/inventory}" 
+                   class="nav-link-miyabi" 
+                   th:classappend="${activeTab == 'inventory' ? 'active' : ''}">
+                    <i class="bi bi-box-seam-fill"></i> Inventario
+                </a>
+            </li>
+            <li class="miyabi-admin-nav-item">
                 <a th:href="@{/admin/users}" 
                    class="nav-link-miyabi" 
                    th:classappend="${activeTab == 'users' ? 'active' : ''}">

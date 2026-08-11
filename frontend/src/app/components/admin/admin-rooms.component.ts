@@ -182,6 +182,10 @@ import { Room, RoomType } from '../../models/room.model';
                 }
               </select>
             </div>
+            <div class="form-group">
+              <label>Descripción Adicional de la Habitación</label>
+              <textarea [(ngModel)]="currentRoom.additionalDescription" name="additionalDescription" rows="3" placeholder="Notas sobre la unidad física, tina al aire libre, mantenimiento..." style="width: 100%; padding: 10px; border: 1px solid #CCC; border-radius: 4px; font-family: inherit;"></textarea>
+            </div>
             <div class="modal-actions">
               <button type="button" class="btn-miyabi btn-miyabi-outline" (click)="showModal = false">Cancelar</button>
               <button type="submit" class="btn-miyabi btn-miyabi-enji">Guardar Habitación</button>
@@ -297,6 +301,7 @@ export class AdminRoomsComponent implements OnInit {
       roomNumber: this.currentRoom.roomNumber || '101',
       floor: this.currentRoom.floor || 1,
       state: (this.currentRoom.state as any) || 'Available',
+      additionalDescription: this.currentRoom.additionalDescription || '',
       roomType: selectedType
     };
 

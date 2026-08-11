@@ -13,6 +13,8 @@ import { MyReservationsComponent } from './components/my-reservations/my-reserva
 import { AdminDashboardComponent } from './components/admin/admin-dashboard.component';
 import { AdminRoomsComponent } from './components/admin/admin-rooms.component';
 import { AdminRoomTypesComponent } from './components/admin/admin-room-types.component';
+import { AdminReservationsComponent } from './components/admin/admin-reservations.component';
+import { AdminInventoryComponent } from './components/admin/admin-inventory.component';
 import { AdminUsersComponent } from './components/admin/admin-users.component';
 import { AdminReportsComponent } from './components/admin/admin-reports.component';
 import { AdminMovementsComponent } from './components/admin/admin-movements.component';
@@ -36,6 +38,8 @@ export const routes: Routes = [
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'admin/rooms', component: AdminRoomsComponent, canActivate: [adminGuard] },
   { path: 'admin/room-types', component: AdminRoomTypesComponent, canActivate: [adminGuard] },
+  { path: 'admin/reservations', component: AdminReservationsComponent, canActivate: [adminGuard] },
+  { path: 'admin/inventory', component: AdminInventoryComponent, canActivate: [adminGuard] },
   { path: 'admin/users', component: AdminUsersComponent, canActivate: [adminGuard] },
   { path: 'admin/movements', component: AdminMovementsComponent, canActivate: [adminGuard] },
   { path: 'admin/reports', component: AdminReportsComponent, canActivate: [adminGuard] },

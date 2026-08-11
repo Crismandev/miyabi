@@ -41,6 +41,16 @@ Chart.register(...registerables);
             </a>
           </li>
           <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/reservations" class="nav-link-miyabi">
+              <i class="bi bi-calendar-check-fill"></i> Reservas
+            </a>
+          </li>
+          <li class="miyabi-admin-nav-item">
+            <a routerLink="/admin/inventory" class="nav-link-miyabi">
+              <i class="bi bi-box-seam-fill"></i> Inventario
+            </a>
+          </li>
+          <li class="miyabi-admin-nav-item">
             <a routerLink="/admin/users" class="nav-link-miyabi">
               <i class="bi bi-people-fill"></i> Personal
             </a>

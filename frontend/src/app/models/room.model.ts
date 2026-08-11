@@ -17,6 +17,7 @@ export interface Room {
   roomNumber: string;
   floor: number;
   state: 'Available' | 'Occupied' | 'Maintenance' | 'Cleaning';
+  additionalDescription?: string;
   roomType: RoomType;
   primaryImage?: string;
 }
