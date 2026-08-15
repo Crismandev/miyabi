@@ -1,0 +1,42 @@
+erDiagram
+    %% ============================================================
+    %% MÓDULO DE HABITACIONES E INVENTARIO - HOTEL MIYABI
+    %% ============================================================
+
+    room_type ||--o{ room_images : "posee imagenes en carrusel"
+    room_type ||--o{ rooms : "clasifica instancias físicas"
+
+    room_type {
+        int type_id PK "AUTO_INCREMENT"
+        string name_type "UNIQUE (Suite Deluxe, Ryokan Tradicional)"
+        text description "Descripcion completa del tipo"
+        string short_description "Breve sintesis"
+        int capacity_people "Aforo maximo"
+        decimal base_price "Precio estandar por noche"
+        decimal high_season_price "Precio en temporada alta"
+        string image_url "Imagen destacada de portada"
+        string floor_plan_url "Plano o croquis arquitectonico"
+        string room_size "Superficie en m2"
+        string location_info "Piso / orientacion"
+        string bed_type "Detalle de camas"
+        json amenities "Lista JSON (WiFi, Onsen, etc.)"
+    }
+
+    room_images {
+        int image_id PK "AUTO_INCREMENT"
+        string image_url "URL de la imagen"
+        string alt_text "Texto alternativo accesibilidad"
+        int display_order "Orden en carrusel"
+        tinyint is_main "1=Es portada carrusel"
+        int type_id FK "FK -> room_type.type_id (CASCADE)"
+    }
+
+    rooms {
+        int room_id PK "AUTO_INCREMENT"
+        string room_number "UNIQUE (Ej: 101, 202, P3)"
+        int floor "Numero de piso"
+        string state "Available, Occupied, Reserved, Cleaning, Maintenance"
+        text additional_description "Notas de mantenimiento/estado"
+        date date_last_maintenance "Fecha de ultimo mantenimiento"
+        int type_id FK "FK -> room_type.type_id (CASCADE)"
+    }

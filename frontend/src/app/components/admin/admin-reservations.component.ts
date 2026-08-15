@@ -1,17 +1,18 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../navbar/navbar.component';
 import { ReservationAdminService, AdminReservation } from '../../services/reservation-admin.service';
 import { RoomService } from '../../services/room.service';
 import { Room } from '../../models/room.model';
+import { AdminNavbarComponent } from './admin-navbar.component';
 
 @Component({
   selector: 'app-admin-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, AdminNavbarComponent],
   template: `
-    <app-navbar></app-navbar>
+    <app-admin-navbar></app-admin-navbar>
+
 
     <main class="admin-container">
       <div class="content-wrapper">

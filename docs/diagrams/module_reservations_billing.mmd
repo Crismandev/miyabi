@@ -1,0 +1,86 @@
+erDiagram
+    %% ============================================================
+    %% MÓDULO DE RESERVAS, CONSUMOS Y FACTURACIÓN - HOTEL MIYABI
+    %% ============================================================
+
+    guests ||--o{ reservations : "efectua reserva"
+    rooms ||--o{ reservations : "aloja reserva"
+    users ||--o{ reservations : "procesa check-in"
+    users ||--o{ reservations : "procesa check-out"
+    reservations ||--o{ consumption : "acumula consumo"
+    services_catalog ||--o{ consumption : "es solicitado en"
+    users ||--o{ consumption : "registra pedido"
+    reservations ||--|| payments : "se liquida totalmente con"
+    users ||--o{ payments : "realiza el cobro"
+
+    guests {
+        int guest_id PK
+        string names
+        string surnames
+        string dni
+        string email
+    }
+
+    rooms {
+        int room_id PK
+        string room_number
+        string state
+    }
+
+    users {
+        int user_id PK
+        string names
+        string email
+    }
+
+    reservations {
+        int reservation_id PK "AUTO_INCREMENT"
+        string reservation_code "UNIQUE (RES-2026-0001)"
+        date entry_date "Fecha entrada"
+        date departure_date "Fecha salida"
+        int number_nights "Total noches"
+        decimal price_per_night "Tarifa por noche"
+        decimal room_subtotal "Noches x Tarifa"
+        decimal total_consumption "Suma consumos"
+        decimal total_pay "Subtotal + Consumos"
+        string state "Pending, Confirmed, Check-in, Check-out, Cancelled"
+        text observations "Notas / Peticiones"
+        int num_adults "Adultos"
+        int num_children "Niños"
+        datetime checkin_date "Timestamp Checkin"
+        datetime checkout_date "Timestamp Checkout"
+        int guest_id FK
+        int room_id FK
+        int user_id_checkin FK
+        int user_id_checkout FK
+    }
+
+    services_catalog {
+        int service_id PK "AUTO_INCREMENT"
+        string service_name "Nombre del servicio"
+        decimal price "Precio unitario"
+        string category "Comida, Spa, etc."
+        enum season "Temporada"
+    }
+
+    consumption {
+        int consumption_id PK "AUTO_INCREMENT"
+        int amount "Cantidad"
+        decimal unit_price "Precio unitario"
+        decimal subtotal "Cantidad x Precio"
+        datetime consumption_date "Timestamp"
+        int reservation_id FK
+        int service_id FK
+        int user_registration_id FK
+    }
+
+    payments {
+        int payment_id PK "AUTO_INCREMENT"
+        decimal total_amount "Monto cobrado"
+        string payment_method "Efectivo, Tarjeta, Transferencia"
+        string payment_status "Paid"
+        string receipt_number "Numero comprobante"
+        datetime payment_day "Timestamp pago"
+        int reservation_id FK "UNIQUE"
+        int user_charge_id FK
+    }

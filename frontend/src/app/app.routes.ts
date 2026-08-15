@@ -18,7 +18,7 @@ import { AdminInventoryComponent } from './components/admin/admin-inventory.comp
 import { AdminUsersComponent } from './components/admin/admin-users.component';
 import { AdminReportsComponent } from './components/admin/admin-reports.component';
 import { AdminMovementsComponent } from './components/admin/admin-movements.component';
-import { authGuard, adminGuard } from './guards/auth.guard';
+import { authGuard, adminGuard, strictAdminOnlyGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -40,9 +40,10 @@ export const routes: Routes = [
   { path: 'admin/room-types', component: AdminRoomTypesComponent, canActivate: [adminGuard] },
   { path: 'admin/reservations', component: AdminReservationsComponent, canActivate: [adminGuard] },
   { path: 'admin/inventory', component: AdminInventoryComponent, canActivate: [adminGuard] },
-  { path: 'admin/users', component: AdminUsersComponent, canActivate: [adminGuard] },
-  { path: 'admin/movements', component: AdminMovementsComponent, canActivate: [adminGuard] },
-  { path: 'admin/reports', component: AdminReportsComponent, canActivate: [adminGuard] },
+  // Rutas exclusivas del Administrador (Protegidas estricta para Admin)
+  { path: 'admin/movements', component: AdminMovementsComponent, canActivate: [strictAdminOnlyGuard] },
+  { path: 'admin/users', component: AdminUsersComponent, canActivate: [strictAdminOnlyGuard] },
+  { path: 'admin/reports', component: AdminReportsComponent, canActivate: [strictAdminOnlyGuard] },
 
   { path: '**', redirectTo: '' }
 ];

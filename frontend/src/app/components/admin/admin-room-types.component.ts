@@ -5,59 +5,16 @@ import { RouterLink } from '@angular/router';
 import { RoomService } from '../../services/room.service';
 import { RoomType } from '../../models/room.model';
 import { HttpClient } from '@angular/common/http';
+import { AdminNavbarComponent } from './admin-navbar.component';
 
 @Component({
   selector: 'app-admin-room-types',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminNavbarComponent],
   template: `
     <!-- Header Admin Back-Office -->
-    <header class="miyabi-admin-navbar">
-      <div class="d-flex align-items-center gap-4">
-        <a routerLink="/admin/dashboard" class="miyabi-admin-brand">
-          <span class="kanji-logo">雅</span>
-          <span class="brand-title">MIYABI</span>
-          <span class="brand-badge">Back-office</span>
-        </a>
+    <app-admin-navbar></app-admin-navbar>
 
-        <ul class="miyabi-admin-nav">
-          <li class="miyabi-admin-nav-item">
-            <a routerLink="/admin/dashboard" class="nav-link-miyabi">
-              <i class="bi bi-grid-1x2-fill"></i> Dashboard
-            </a>
-          </li>
-          <li class="miyabi-admin-nav-item">
-            <a routerLink="/admin/rooms" class="nav-link-miyabi">
-              <i class="bi bi-door-open-fill"></i> Habitaciones
-            </a>
-          </li>
-          <li class="miyabi-admin-nav-item">
-            <a routerLink="/admin/room-types" class="nav-link-miyabi active">
-              <i class="bi bi-tags-fill"></i> Tarifas & Suites
-            </a>
-          </li>
-          <li class="miyabi-admin-nav-item">
-            <a routerLink="/admin/users" class="nav-link-miyabi">
-              <i class="bi bi-people-fill"></i> Personal
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="admin-navbar-actions">
-        <div class="admin-profile-pill">
-          <span class="admin-avatar">A</span>
-          <div class="admin-user-info">
-            <span class="admin-name">Admin Ryokan</span>
-            <span class="admin-role">Administrador</span>
-          </div>
-        </div>
-
-        <a routerLink="/" class="btn-view-site">
-          <i class="bi bi-box-arrow-up-right"></i> VER PORTAL WEB
-        </a>
-      </div>
-    </header>
 
     <main class="miyabi-admin-container">
       <div class="miyabi-page-header">
