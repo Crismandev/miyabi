@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visor de Diagramas Entidad-Relación — Hotel Miyabi</title>
+  <style>
+    :root {
+      --bg-color: #0f1412;
+      --card-bg: #18201c;
+      --card-border: #2a3831;
+      --accent: #c2a661;
+      --accent-hover: #d4b872;
+      --text-main: #e8eae9;
+      --text-muted: #9aa5a0;
+      --badge-bg: #232f28;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .info-banner {
+      background-color: var(--card-bg);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .info-banner code {
+      background: #232f28;
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tab-btn.active {
+      background-color: var(--accent);
+      color: #0d1210;
+      font-weight: 700;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(194, 166, 97, 0.25);
+    }
+
+    .diagram-container {
+      display: none;
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 2rem;
+      overflow-x: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .diagram-container.active {
+      display: block;
+    }
+
+    .diagram-title {
+      font-size: 1.25rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .diagram-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      background: #121815;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+
+  <!-- Script Mermaid cargado dinámicamente con manejo de errores local -->
+  <script>
+    function loadMermaid() {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+      script.onload = function() {
+        if (window.mermaid) {
+          mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+              darkMode: true,
+              background: '#121815',
+              primaryColor: '#232f28',
+              primaryTextColor: '#e8eae9',
+              primaryBorderColor: '#c2a661',
+              lineColor: '#c2a661',
+              secondaryColor: '#18201c',
+              tertiaryColor: '#121815'
+            }
+          });
+        }
+      };
+      script.onerror = function() {
+        console.warn('No se pudo cargar Mermaid desde CDN mediante file:// origin');
+      };
+      document.head.appendChild(script);
+    }
+    window.addEventListener('DOMContentLoaded', loadMermaid);
+  </script>
+</head>
+<body>
+
+  <header>
+    <h1>🏯 Hotel Miyabi — Visor de Diagramas ER</h1>
+    <p class="subtitle">Esquema Gráfico Entidad-Relación de Base de Datos (`DB_Miyabi`)</p>
+  </header>
+
+  <div class="info-banner">
+    <strong>💡 Nota sobre apertura de archivos locales (file://):</strong><br>
+    Los navegadores bloquean la ejecución de scripts remotos cuando un archivo HTML se abre directamente haciendo doble clic (debido a la política de origen de seguridad <code>file://</code>).<br>
+    <strong>Para ver el diagrama renderizado en el navegador:</strong>
+    <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+      <li>Ejecuta un servidor HTTP local desde la terminal en la raíz del proyecto:
+        <code>python3 -m http.server 8000</code>
+      </li>
+      <li>Abre en tu navegador: <code>http://localhost:8000/docs/diagrams/viewer.html</code></li>
+      <li>O abre directamente el archivo <strong><a href="er_diagram.md" style="color: var(--accent);">er_diagram.md</a></strong> en la vista previa de Markdown de VS Code / Antigravity IDE (se renderiza automáticamente).</li>
+    </ol>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('full')">📊 Diagrama ER Completo</button>
+    <button class="tab-btn" onclick="switchTab('rooms')">🛏️ Habitaciones e Inventario</button>
+    <button class="tab-btn" onclick="switchTab('users')">👥 Usuarios y Seguridad</button>
+    <button class="tab-btn" onclick="switchTab('billing')">💳 Reservas y Facturación</button>
+  </div>
+
+  <!-- TAB 1: FULL ER -->
+  <div id="tab-full" class="diagram-container active">
+    <div class="diagram-title">Diagrama Entidad-Relación Completo (DB_Miyabi)</div>
+    <p class="diagram-desc">Vista global de las 11 tablas del sistema con atributos, tipos de datos, claves primarias (PK) y foráneas (FK).</p>
+    <pre class="mermaid">
+erDiagram
+    roles ||--o{ users : "tiene asignado"
+    room_type ||--o{ room_images : "posee galeria"
+    room_type ||--o{ rooms : "clasifica"
+    guests ||--o{ reservations : "realiza"
+    rooms ||--o{ reservations : "es reservada en"
+    users ||--o{ reservations : "registra check-in"
+    users ||--o{ reservations : "registra check-out"
+    reservations ||--o{ consumption : "genera"
+    services_catalog ||--o{ consumption : "ofrece"
+    users ||--o{ consumption : "registra"
+    reservations ||--|| payments : "se salda con"
+    users ||--o{ payments : "procesa cobro"
+
+    roles {
+        int rol_id PK
+        string name_rol UNIQUE
+        string description
+    }
+    users {
+        int user_id PK
+        string names
+        string email UNIQUE
+        int rol_id FK
+    }
+    guests {
+        int guest_id PK
+        string names
+        string dni UNIQUE
+        string email UNIQUE
+    }
+    room_type {
+        int type_id PK
+        string name_type UNIQUE
+        decimal base_price
+        json amenities
+    }
+    room_images {
+        int image_id PK
+        string image_url
+        int type_id FK
+    }
+    rooms {
+        int room_id PK
+        string room_number UNIQUE
+        string state
+        int type_id FK
+    }
+    reservations {
+        int reservation_id PK
+        string reservation_code UNIQUE
+        date entry_date
+        date departure_date
+        decimal total_pay
+        string state
+        int guest_id FK
+        int room_id FK
+    }
+    services_catalog {
+        int service_id PK
+        string service_name
+        decimal price
+    }
+    consumption {
+        int consumption_id PK
+        int amount
+        decimal subtotal
+        int reservation_id FK
+        int service_id FK
+    }
+    payments {
+        int payment_id PK
+        decimal total_amount
+        string payment_method
+        int reservation_id FK
+    }
+    access_log {
+        int access_id PK
+        datetime access_date
+        string access_ip
+    }
+    </pre>
+  </div>
+
+  <!-- TAB 2: ROOMS MODULE -->
+  <div id="tab-rooms" class="diagram-container">
+    <div class="diagram-title">Módulo de Habitaciones e Inventario</div>
+    <p class="diagram-desc">Relación entre tipos de suite (`room_type`), imágenes (`room_images`) e instancias físicas (`rooms`).</p>
+    <pre class="mermaid">
+erDiagram
+    room_type ||--o{ room_images : "galeria carrusel"
+    room_type ||--o{ rooms : "clasifica habitaciones"
+
+    room_type {
+        int type_id PK
+        string name_type UNIQUE
+        text description
+        int capacity_people
+        decimal base_price
+        decimal high_season_price
+        string image_url
+        string floor_plan_url
+        json amenities
+    }
+    room_images {
+        int image_id PK
+        string image_url
+        tinyint is_main
+        int type_id FK
+    }
+    rooms {
+        int room_id PK
+        string room_number UNIQUE
+        int floor
+        string state
+        int type_id FK
+    }
+    </pre>
+  </div>
+
+  <!-- TAB 3: USERS MODULE -->
+  <div id="tab-users" class="diagram-container">
+    <div class="diagram-title">Módulo de Usuarios, Roles y Seguridad</div>
+    <p class="diagram-desc">Estructura RBAC (`roles`, `users`), registros de clientes (`guests`) y logs de auditoría (`access_log`).</p>
+    <pre class="mermaid">
+erDiagram
+    roles ||--o{ users : "perfil de acceso"
+    users ||--o{ access_log : "acceso usuario"
+    guests ||--o{ access_log : "acceso cliente"
+
+    roles {
+        int rol_id PK
+        string name_rol UNIQUE
+        string description
+    }
+    users {
+        int user_id PK
+        string names
+        string surnames
+        string email UNIQUE
+        tinyint state
+        int rol_id FK
+    }
+    guests {
+        int guest_id PK
+        string names
+        string dni UNIQUE
+        string email UNIQUE
+        string phone
+        string country
+    }
+    access_log {
+        int access_id PK
+        datetime access_date
+        string access_ip
+        string user_type
+    }
+    </pre>
+  </div>
+
+  <!-- TAB 4: BILLING MODULE -->
+  <div id="tab-billing" class="diagram-container">
+    <div class="diagram-title">Módulo de Reservas, Consumos y Facturación</div>
+    <p class="diagram-desc">Ciclo de vida transaccional completo desde la reserva de habitación hasta el registro de consumos y cobro final.</p>
+    <pre class="mermaid">
+erDiagram
+    guests ||--o{ reservations : "realiza reserva"
+    rooms ||--o{ reservations : "aloja reserva"
+    users ||--o{ reservations : "check-in / check-out"
+    reservations ||--o{ consumption : "registra consumos"
+    services_catalog ||--o{ consumption : "servicio consumido"
+    reservations ||--|| payments : "se liquida con pago"
+    users ||--o{ payments : "recepcionista cobra"
+
+    reservations {
+        int reservation_id PK
+        string reservation_code UNIQUE
+        date entry_date
+        date departure_date
+        decimal room_subtotal
+        decimal total_consumption
+        decimal total_pay
+        string state
+        int guest_id FK
+        int room_id FK
+    }
+    services_catalog {
+        int service_id PK
+        string service_name
+        decimal price
+        string category
+    }
+    consumption {
+        int consumption_id PK
+        int amount
+        decimal subtotal
+        int reservation_id FK
+        int service_id FK
+    }
+    payments {
+        int payment_id PK
+        decimal total_amount
+        string payment_method
+        string receipt_number
+        int reservation_id FK
+    }
+    </pre>
+  </div>
+
+  <footer>
+    <p>© 2026 Hotel Miyabi — Documentación Técnica de Arquitectura de Base de Datos</p>
+  </footer>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.diagram-container').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>

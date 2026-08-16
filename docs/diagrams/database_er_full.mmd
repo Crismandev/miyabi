@@ -1,0 +1,152 @@
+erDiagram
+    %% ============================================================
+    %% DIAGRAMA ENTIDAD-RELACIÓN COMPLETO - HOTEL MIYABI (DB_Miyabi)
+    %% ============================================================
+
+    roles ||--o{ users : "tiene asignado"
+    room_type ||--o{ room_images : "posee galeria"
+    room_type ||--o{ rooms : "clasifica"
+    guests ||--o{ reservations : "realiza"
+    rooms ||--o{ reservations : "es reservada en"
+    users ||--o{ reservations : "registra check-in"
+    users ||--o{ reservations : "registra check-out"
+    reservations ||--o{ consumption : "genera"
+    services_catalog ||--o{ consumption : "ofrece"
+    users ||--o{ consumption : "registra"
+    reservations ||--|| payments : "se salda con"
+    users ||--o{ payments : "procesa cobro"
+
+    roles {
+        int rol_id PK "AUTO_INCREMENT"
+        string name_rol "UNIQUE (Administrator, Receptionist, Client)"
+        string description "Descripcion del rol"
+    }
+
+    users {
+        int user_id PK "AUTO_INCREMENT"
+        string names "Nombres del usuario"
+        string surnames "Apellidos"
+        string email "UNIQUE, Correo de acceso"
+        string password "Hash o clave encriptada"
+        tinyint state "1=Active, 0=Inactive"
+        datetime creation_date "Fecha de registro"
+        int rol_id FK "FK -> roles.rol_id"
+    }
+
+    guests {
+        int guest_id PK "AUTO_INCREMENT"
+        string names "Nombres del cliente"
+        string surnames "Apellidos"
+        string dni "UNIQUE, Documento ident."
+        string email "UNIQUE, Correo de contacto"
+        string password "Clave de portal web"
+        string phone "Telefono fijo"
+        string mobile_phone "Telefono movil"
+        string address "Direccion de residencia"
+        string country "Pais de procedencia"
+        string city "Ciudad"
+        string postal_code "Codigo postal"
+        datetime registration_date "Fecha de registro"
+        tinyint state "1=Activo, 0=Inactivo"
+    }
+
+    room_type {
+        int type_id PK "AUTO_INCREMENT"
+        string name_type "UNIQUE (Suite Deluxe, Ryokan Tradicional, etc.)"
+        text description "Descripcion detallada"
+        string short_description "Resumen breve"
+        int capacity_people "Capacidad maxima de personas"
+        decimal base_price "Precio tarifa base por noche"
+        decimal high_season_price "Precio temporada alta"
+        string image_url "URL imagen destacada"
+        string floor_plan_url "URL plano/croquis"
+        string room_size "Dimensiones (ej: 45 m2)"
+        string location_info "Ubicacion (ej: Planta 2)"
+        string bed_type "Configuracion de camas"
+        json amenities "Lista JSON de amenidades"
+    }
+
+    room_images {
+        int image_id PK "AUTO_INCREMENT"
+        string image_url "URL de la fotografia"
+        string alt_text "Texto alternativo SEO/Accesibilidad"
+        int display_order "Orden de aparicion"
+        tinyint is_main "1=Principal carrusel"
+        int type_id FK "FK -> room_type.type_id (CASCADE)"
+    }
+
+    rooms {
+        int room_id PK "AUTO_INCREMENT"
+        string room_number "UNIQUE (Ej: 101, 205, P3)"
+        int floor "Numero de piso"
+        string state "Available, Occupied, Reserved, Cleaning, Maintenance"
+        text additional_description "Notas adicionales"
+        date date_last_maintenance "Ultimo mantenimiento"
+        int type_id FK "FK -> room_type.type_id (CASCADE)"
+    }
+
+    reservations {
+        int reservation_id PK "AUTO_INCREMENT"
+        string reservation_code "UNIQUE (Ej: RES-2026-0001)"
+        date entry_date "Fecha de llegada"
+        date departure_date "Fecha de salida"
+        int number_nights "Duracion de estancia"
+        decimal price_per_night "Precio pactado por noche"
+        decimal room_subtotal "Noches x Precio Noche"
+        decimal total_consumption "Suma acumulada de consumos"
+        decimal total_pay "Monto total (Subtotal + Consumos)"
+        string state "Pending, Confirmed, Check-in, Check-out, Cancelled"
+        text observations "Peticiones especiales u observaciones"
+        int num_adults "Cantidad de adultos (Min 1)"
+        int num_children "Cantidad de niños"
+        datetime reservation_date "Momento de creacion"
+        datetime checkin_date "Registro check-in real"
+        datetime checkout_date "Registro check-out real"
+        int guest_id FK "FK -> guests.guest_id"
+        int room_id FK "FK -> rooms.room_id (CASCADE)"
+        int user_id_checkin FK "FK -> users.user_id (Recepcionista)"
+        int user_id_checkout FK "FK -> users.user_id (Recepcionista)"
+    }
+
+    services_catalog {
+        int service_id PK "AUTO_INCREMENT"
+        string service_name "Nombre del servicio/producto"
+        string description "Descripcion"
+        decimal price "Precio unitario"
+        string category "Bebidas, Comidas, Spa, Lavanderia, etc."
+        enum season "Autumn, Winter, Summer, Spring, All year"
+        tinyint available "1=Activo, 0=Inactivo"
+    }
+
+    consumption {
+        int consumption_id PK "AUTO_INCREMENT"
+        int amount "Cantidad consumida"
+        decimal unit_price "Precio unitario cobrado"
+        decimal subtotal "Cantidad x Precio Unitario"
+        string observation "Notas sobre el servicio brindado"
+        datetime consumption_date "Fecha y hora del consumo"
+        int reservation_id FK "FK -> reservations.reservation_id (CASCADE)"
+        int service_id FK "FK -> services_catalog.service_id"
+        int user_registration_id FK "FK -> users.user_id (Recepcionista)"
+    }
+
+    payments {
+        int payment_id PK "AUTO_INCREMENT"
+        decimal total_amount "Monto total cancelado"
+        string payment_method "Efectivo, Tarjeta, Transferencia"
+        string payment_status "Paid, Pending, Refunded"
+        string receipt_number "Numero comprobante / boleta / factura"
+        datetime payment_day "Fecha y hora del pago"
+        text observation "Notas del pago"
+        int reservation_id FK "UNIQUE, FK -> reservations.reservation_id (CASCADE)"
+        int user_charge_id FK "FK -> users.user_id (Recepcionista cobrador)"
+    }
+
+    access_log {
+        int access_id PK "AUTO_INCREMENT"
+        datetime access_date "Fecha y hora de intento"
+        string access_ip "Direccion IP de origen"
+        string user_type "Tipo: Usuario o Cliente"
+        int user_id "ID de usuario (opcional)"
+        int guest_id "ID de cliente (opcional)"
+    }

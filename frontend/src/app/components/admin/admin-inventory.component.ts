@@ -1,15 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../navbar/navbar.component';
 import { InventoryService, ServiceItem } from '../../services/inventory.service';
+import { AdminNavbarComponent } from './admin-navbar.component';
 
 @Component({
   selector: 'app-admin-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, AdminNavbarComponent],
   template: `
-    <app-navbar></app-navbar>
+    <app-admin-navbar></app-admin-navbar>
+
 
     <main class="admin-container">
       <div class="content-wrapper">

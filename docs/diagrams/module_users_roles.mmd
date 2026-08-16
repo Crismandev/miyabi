@@ -1,0 +1,51 @@
+erDiagram
+    %% ============================================================
+    %% MÓDULO DE USUARIOS, ROLES Y CLIENTES - HOTEL MIYABI
+    %% ============================================================
+
+    roles ||--o{ users : "asigna perfil de permisos"
+    users ||--o{ access_log : "registra acceso administrativo"
+    guests ||--o{ access_log : "registra acceso cliente web"
+
+    roles {
+        int rol_id PK "AUTO_INCREMENT"
+        string name_rol "UNIQUE (Administrator, Receptionist, Client)"
+        string description "Descripcion de privilegios"
+    }
+
+    users {
+        int user_id PK "AUTO_INCREMENT"
+        string names "Nombres"
+        string surnames "Apellidos"
+        string email "UNIQUE, Correo corporativo"
+        string password "Contraseña encriptada"
+        tinyint state "1=Activo, 0=Inactivo"
+        datetime creation_date "Fecha de alta"
+        int rol_id FK "FK -> roles.rol_id"
+    }
+
+    guests {
+        int guest_id PK "AUTO_INCREMENT"
+        string names "Nombres"
+        string surnames "Apellidos"
+        string dni "UNIQUE, DNI / Pasaporte"
+        string email "UNIQUE, Correo personal"
+        string password "Contraseña web"
+        string phone "Telefono fijo"
+        string mobile_phone "Telefono movil"
+        string address "Direccion"
+        string country "Pais de origen"
+        string city "Ciudad de origen"
+        string postal_code "Codigo postal"
+        datetime registration_date "Fecha de registro"
+        tinyint state "1=Activo, 0=Inactivo"
+    }
+
+    access_log {
+        int access_id PK "AUTO_INCREMENT"
+        datetime access_date "Timestamp de auditoria"
+        string access_ip "Direccion IP de origen"
+        string user_type "Usuario o Cliente"
+        int user_id "FK opcional -> users.user_id"
+        int guest_id "FK opcional -> guests.guest_id"
+    }

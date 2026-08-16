@@ -3,13 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReservationService } from '../../services/reservation.service';
 import { Reservation } from '../../models/reservation.model';
+import { AdminNavbarComponent } from './admin-navbar.component';
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminNavbarComponent],
   template: `
+    <app-admin-navbar></app-admin-navbar>
+
     <div class="admin-reports miyabi-container">
+
       <div class="reports-header">
         <span class="badge-ryokan-luxury">MÓDULO DE REPORTES Y ANALÍTICA</span>
         <h2>Reporte de Ocupación e Ingresos por Período</h2>

@@ -43,6 +43,8 @@
 El proyecto cuenta con una arquitectura moderna de dos capas totalmente independientes:
 - **Backend**: Spring Boot 3 (Java 17) operando como **API RESTful** con Hibernate/JPA y seguridad CORS habilitada.
 - **Frontend**: **Angular 18 SPA (Single Page Application)** renderizado en el navegador (`http://localhost:4200`) conservando al 100% la estética minimalista tradicional japonesa (*Wabi-Sabi Luxury*) mediante variables SCSS y Chart.js.
+- **Base de Datos & Esquema ER**: MySQL 8.0 / MariaDB. Consulta la documentación y diagramas Mermaid en [`docs/diagrams/er_diagram.md`](docs/diagrams/er_diagram.md) y abre el visor interactivo en [`docs/diagrams/viewer.html`](docs/diagrams/viewer.html).
+
 
 ---
 
