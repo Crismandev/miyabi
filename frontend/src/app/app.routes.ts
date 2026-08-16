@@ -8,6 +8,7 @@ import { AmenitiesComponent } from './components/amenities/amenities.component';
 import { ExperiencesComponent } from './components/experiences/experiences.component';
 import { StayOffersComponent } from './components/stay-offers/stay-offers.component';
 import { LocationComponent } from './components/location/location.component';
+import { ReservationConditionsComponent } from './components/reservation/reservation-conditions.component';
 import { ReservationComponent } from './components/reservation/reservation.component';
 import { MyReservationsComponent } from './components/my-reservations/my-reservations.component';
 import { AdminDashboardComponent } from './components/admin/admin-dashboard.component';
@@ -31,18 +32,55 @@ export const routes: Routes = [
   { path: 'stay-offers', component: StayOffersComponent },
   { path: 'stayOffers', redirectTo: 'stay-offers' },
   { path: 'location', component: LocationComponent },
-  { path: 'reservation', component: ReservationComponent },
-  { path: 'my-reservations', component: MyReservationsComponent, canActivate: [authGuard] },
-  
-  // Rutas del Panel de Administración (Back-Office)
-  { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
-  { path: 'admin/rooms', component: AdminRoomsComponent, canActivate: [adminGuard] },
-  { path: 'admin/room-types', component: AdminRoomTypesComponent, canActivate: [adminGuard] },
-  { path: 'admin/reservations', component: AdminReservationsComponent, canActivate: [adminGuard] },
-  { path: 'admin/inventory', component: AdminInventoryComponent, canActivate: [adminGuard] },
-  { path: 'admin/users', component: AdminUsersComponent, canActivate: [adminGuard] },
-  { path: 'admin/movements', component: AdminMovementsComponent, canActivate: [adminGuard] },
-  { path: 'admin/reports', component: AdminReportsComponent, canActivate: [adminGuard] },
+  { path: 'reservation', component: ReservationConditionsComponent },
+  { path: 'booking-engine', component: ReservationComponent },
+  {
+    path: 'my-reservations',
+    component: MyReservationsComponent,
+    canActivate: [authGuard],
+  },
 
-  { path: '**', redirectTo: '' }
+  // Rutas del Panel de Administración (Back-Office)
+  {
+    path: 'admin/dashboard',
+    component: AdminDashboardComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/rooms',
+    component: AdminRoomsComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/room-types',
+    component: AdminRoomTypesComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/reservations',
+    component: AdminReservationsComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/inventory',
+    component: AdminInventoryComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/users',
+    component: AdminUsersComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/movements',
+    component: AdminMovementsComponent,
+    canActivate: [adminGuard],
+  },
+  {
+    path: 'admin/reports',
+    component: AdminReportsComponent,
+    canActivate: [adminGuard],
+  },
+
+  { path: '**', redirectTo: '' },
 ];
