@@ -10,7 +10,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <header
-      class="fixed top-0 left-0 w-full h-[60px] md:h-[65px] z-[50] bg-[#f7f7f5] px-[26px] md:px-[60px] flex justify-between items-center transition-transform duration-500 ease-in-out border-b border-[#e5e3df]"
+      class="fixed top-0 left-0 w-full h-[60px] md:h-[65px] z-[50] bg-[#f7f7f5] px-[26px] md:px-[60px] flex justify-between items-center transition-transform duration-500 ease-in-out"
       [class.-translate-y-full]="
         isHomePage() &&
         !isScrolled() &&
@@ -105,7 +105,7 @@ import { AuthService } from '../../services/auth.service';
             } @else {
               <button
                 (click)="toggleLoginModal($event)"
-                class="border border-[#222] px-4 py-1.5 text-[12px] tracking-[0.15em] text-[#222] uppercase hover:bg-[#222] hover:text-white transition-colors cursor-pointer"
+                class="border border-[#222] rounded px-4 py-1.5 text-[12px] tracking-[0.15em] text-[#222] uppercase hover:bg-[#222] hover:text-white transition-colors cursor-pointer"
               >
                 Iniciar Sesión
               </button>
@@ -213,7 +213,7 @@ import { AuthService } from '../../services/auth.service';
               (click)="closeMenu()"
               class="block text-[14px] tracking-[0.15em] text-gray-900 uppercase opacity-0 hover:text-gray-500 transition-colors"
               [class.animate-slide-up]="isMenuOpen()"
-              [style.animation-delay]="0.4 + i * 0.08 + 's'"
+              [style.animation-delay]="0.6 + i * 0.1 + 's'"
             >
               {{ item.name }}
             </a>
