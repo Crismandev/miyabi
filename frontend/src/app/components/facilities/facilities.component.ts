@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SectionHeaderComponent } from '../section-header.component';
 import { AnchorNavComponent, AnchorItem } from '../anchor-nav.component';
-import { FacilityCardComponent, Facility } from './facility-card.component';
+import { CardComponent, CardData } from '../cards.component';
 
 @Component({
   selector: 'app-facilities',
@@ -11,7 +11,7 @@ import { FacilityCardComponent, Facility } from './facility-card.component';
     CommonModule,
     AnchorNavComponent,
     SectionHeaderComponent,
-    FacilityCardComponent,
+    CardComponent,
   ],
   template: ` <main
     id="main"
@@ -26,10 +26,7 @@ import { FacilityCardComponent, Facility } from './facility-card.component';
       conceptText="Miyabi se encuentra en la ladera de Yakushiyama (Montaña del Buda de la Curación), sagrada para el culto del Monte Hakusan. En este lugar existió el Templo Yakuoin, donde monjes estudiaban escrituras budistas y sanaban personas usando aguas termales y hierbas medicinales. Como tributo a la historia local, Miyabi ofrece tres bibliotecas para estudiar o leer, dos baños comunes para disfrutar de aguas termales y el Spa Entei ofrece tratamientos modernos basados en hierbas medicinales y termalismo."
     ></app-section-header>
 
-    <div class="mt-[100px]">
-      <app-facility-card *ngFor="let item of facilitiesData" [facility]="item">
-      </app-facility-card>
-    </div>
+    <app-card *ngFor="let item of facilitiesData" [data]="item"> </app-card>
   </main>`,
   styles: [
     `
@@ -50,7 +47,7 @@ export class FacilitiesComponent {
     { id: 'spa', label: 'Spa Entei' },
   ];
 
-  facilitiesData: Facility[] = [
+  facilitiesData: CardData[] = [
     {
       id: 'entrance',
       title: 'Entrada',
