@@ -118,6 +118,10 @@ public class ReservationController {
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmBooking(@RequestBody Map<String, Object> payload) {
         try {
+            // 1. RASTREADOR: Imprimimos en la consola de Spring lo que envió Angular
+            System.out.println("==== PAYLOAD RECIBIDO DESDE ANGULAR ====");
+            System.out.println(payload);
+
             Reservation reservation = reservationService.createReservationFromMap(payload);
 
             Payments payment = new Payments();
@@ -127,13 +131,19 @@ public class ReservationController {
             payment.setObservation("Reserva confirmada vía web");
             payment.setPaymentStatus("Paid"); 
             
-            paymentsRepository.save(payment);
+            try {
+                paymentsRepository.save(payment);
+            } catch (Exception ex) {
+                // 2. RASTREADOR: Si explota aquí, la entidad Payments está mal diseñada
+                throw new RuntimeException("ERROR DE PAGOS: Falló al guardar el Pago. ¿La entidad Payments tiene @GeneratedValue en su llave primaria?", ex);
+            }
 
             return ResponseEntity.ok(Map.of(
                 "message", "Reserva confirmada con éxito",
                 "reservationCode", reservation.getReservationCode()
             ));
         } catch (Exception e) {
+            e.printStackTrace(); // Imprime la traza completa del error en tu terminal
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

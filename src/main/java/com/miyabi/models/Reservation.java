@@ -134,7 +134,7 @@ public class Reservation {
      * Empleado (Usuario) en turno que le cobró y despidió al cliente (Check-Out).
      */
     @ManyToOne
-    @JoinColumn(name = "id_usuario_checkout")
+    @JoinColumn(name = "user_id_checkout")
     private User userCheckout;
 
     public Reservation() {}

@@ -59,39 +59,33 @@ public class ReservationService {
 
     @Transactional
     public Reservation createReservation(Reservation reservation) {
-        Guest existingGuest = null;
+        Guest incomingGuest = reservation.getGuest();
+        Guest targetGuest = null;
 
-        if (reservation.getGuest() != null && reservation.getGuest().getIdGuest() != null && reservation.getGuest().getIdGuest() > 0) {
-            existingGuest = guestService.findById(reservation.getGuest().getIdGuest());
+        if (incomingGuest == null) {
+            throw new RuntimeException("La reserva debe contener la información del huésped.");
         }
 
-        if (existingGuest == null && reservation.getGuest() != null && reservation.getGuest().getEmail() != null) {
-            existingGuest = guestRepository.findByEmail(reservation.getGuest().getEmail()).orElse(null);
+        if (incomingGuest.getIdGuest() != null && incomingGuest.getIdGuest() > 0) {
+            targetGuest = guestService.findById(incomingGuest.getIdGuest());
         }
 
-        if (existingGuest == null) {
-            List<Guest> allGuests = guestService.findAll();
-            if (!allGuests.isEmpty()) {
-                existingGuest = allGuests.get(0);
-            }
+        if (targetGuest == null && incomingGuest.getEmail() != null && !incomingGuest.getEmail().isBlank()) {
+            targetGuest = guestRepository.findByEmail(incomingGuest.getEmail()).orElse(null);
         }
 
-        if (existingGuest != null) {
-            Guest incomingData = reservation.getGuest();
-            if (incomingData != null) {
-                if (incomingData.getPhone() != null && !incomingData.getPhone().isBlank()) existingGuest.setPhone(incomingData.getPhone());
-                if (incomingData.getMobilePhone() != null && !incomingData.getMobilePhone().isBlank()) existingGuest.setMobilePhone(incomingData.getMobilePhone());
-                if (incomingData.getAddress() != null && !incomingData.getAddress().isBlank()) existingGuest.setAddress(incomingData.getAddress());
-                if (incomingData.getCountry() != null && !incomingData.getCountry().isBlank()) existingGuest.setCountry(incomingData.getCountry());
-                if (incomingData.getCity() != null && !incomingData.getCity().isBlank()) existingGuest.setCity(incomingData.getCity());
-                if (incomingData.getPostalCode() != null && !incomingData.getPostalCode().isBlank()) existingGuest.setPostalCode(incomingData.getPostalCode());
-            }
-
-            guestService.save(existingGuest);
-            reservation.setGuest(existingGuest);
+        if (targetGuest == null) {
+            targetGuest = guestRepository.save(incomingGuest);
         } else {
-            throw new RuntimeException("La reserva debe estar asociada a un cliente logueado.");
+            if (incomingGuest.getNames() != null) targetGuest.setNames(incomingGuest.getNames());
+            if (incomingGuest.getSurnames() != null) targetGuest.setSurnames(incomingGuest.getSurnames());
+            if (incomingGuest.getPhone() != null) targetGuest.setPhone(incomingGuest.getPhone());
+            if (incomingGuest.getDni() != null) targetGuest.setDni(incomingGuest.getDni());
+            
+            targetGuest = guestRepository.save(targetGuest);
         }
+
+        reservation.setGuest(targetGuest);
 
         int adults = reservation.getNumAdults() != null ? reservation.getNumAdults() : 1;
         int children = reservation.getNumChildren() != null ? reservation.getNumChildren() : 0;
@@ -104,17 +98,26 @@ public class ReservationService {
             throw new RuntimeException("Debe haber al menos 1 adulto en la reserva.");
         }
 
-        Room roomToReserve = roomService.findById(reservation.getRoom().getIdRoom());
-        if (roomToReserve == null) {
-            throw new RuntimeException("La habitación no existe.");
+        Room roomData = reservation.getRoom();
+        if (roomData == null || roomData.getIdRoom() == null || roomData.getIdRoom() == 0) {
+            throw new RuntimeException("ERROR DE MAPEO: El ID de la habitación llegó nulo o en 0. Seleccione una habitación válida.");
         }
+
+        Room roomToReserve = roomService.findById(roomData.getIdRoom());
+        if (roomToReserve == null) {
+            throw new RuntimeException("ERROR DE BASE DE DATOS: La habitación con ID " + roomData.getIdRoom() + " no existe.");
+        }
+        reservation.setRoom(roomToReserve);
 
         long nights = ChronoUnit.DAYS.between(reservation.getEntryDate(), reservation.getDepartureDate());
         if (nights <= 0) nights = 1;
         reservation.setNumberNights((int) nights);
 
         BigDecimal nightsDecimal = new BigDecimal(nights);
-        BigDecimal pricePerNight = reservation.getPricePerNight() != null ? reservation.getPricePerNight() : (roomToReserve.getRoomType() != null ? roomToReserve.getRoomType().getBasePrice() : new BigDecimal("150.00"));
+        BigDecimal pricePerNight = reservation.getPricePerNight() != null 
+                ? reservation.getPricePerNight() 
+                : (roomToReserve.getRoomType() != null ? roomToReserve.getRoomType().getBasePrice() : new BigDecimal("350.00"));
+                
         reservation.setPricePerNight(pricePerNight);
         BigDecimal subtotal = pricePerNight.multiply(nightsDecimal);
         reservation.setRoomSubtotal(subtotal);
@@ -123,7 +126,7 @@ public class ReservationService {
         String code = "RES-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         reservation.setReservationCode(code);
         if (reservation.getState() == null || reservation.getState().isBlank()) {
-            reservation.setState("Pending");
+            reservation.setState("Confirmed");
         }
 
         return reservationRepository.save(reservation);
@@ -134,21 +137,39 @@ public class ReservationService {
 
         res.setEntryDate(LocalDate.parse((String) payload.get("entryDate")));
         res.setDepartureDate(LocalDate.parse((String) payload.get("departureDate")));
-        res.setPricePerNight(new BigDecimal(payload.get("pricePerNight").toString()));
-        res.setNumAdults(payload.get("numAdults") != null ? (Integer) payload.get("numAdults") : 1);
-        res.setObservations((String) payload.get("observations"));
 
-        Map<String, Object> guestMap = (Map<String, Object>) payload.get("guest");
-        Guest guest = new Guest();
-        if (guestMap != null && guestMap.get("idGuest") != null) {
-            guest.setIdGuest((Integer) guestMap.get("idGuest"));
+        if (payload.get("totalPay") != null) {
+            res.setTotalPay(new BigDecimal(payload.get("totalPay").toString()));
         }
+
+        res.setNumAdults(payload.get("numAdults") != null ? Integer.valueOf(payload.get("numAdults").toString()) : 1);
+        res.setNumChildren(payload.get("numChildren") != null ? Integer.valueOf(payload.get("numChildren").toString()) : 0);
+
+        Guest guest = new Guest();
+        guest.setNames((String) payload.get("names"));
+        guest.setSurnames((String) payload.get("surnames"));
+        guest.setEmail((String) payload.get("email"));
+        guest.setPhone((String) payload.get("phone"));
+        
+        if (payload.get("documentNumber") != null) {
+            guest.setDni((String) payload.get("documentNumber"));
+        }
+        
+        guest.setCity("No especificada");
+        guest.setCountry("No especificado");
+        guest.setAddress("No especificada");
+        guest.setPassword("12345678");
+        guest.setMobilePhone((String) payload.get("phone"));
+        
         res.setGuest(guest);
 
-        Map<String, Object> roomMap = (Map<String, Object>) payload.get("room");
         Room room = new Room();
-        if (roomMap != null && roomMap.get("idRoom") != null) {
-            room.setIdRoom((Integer) roomMap.get("idRoom"));
+        Object roomIdObj = payload.get("roomId");
+        if (roomIdObj == null) roomIdObj = payload.get("idRoom");
+        if (roomIdObj == null) roomIdObj = payload.get("idHabitacion");
+
+        if (roomIdObj != null && !roomIdObj.toString().isBlank() && !roomIdObj.toString().equals("0")) {
+            room.setIdRoom(Integer.valueOf(roomIdObj.toString()));
         }
         res.setRoom(room);
 

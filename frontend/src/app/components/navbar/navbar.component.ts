@@ -1,364 +1,334 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
-    <!-- Header Navbar Sticky Minimalista Ryokan -->
-    <header class="miyabi-navbar" id="main-nav">
-      <!-- Logo Izquierda -->
-      <div class="nav-left">
-        <a routerLink="/" class="logo" (click)="isSideMenuOpen = false">
-          <img src="img/logo.png" alt="Miyabi Ryokan" />
-        </a>
-      </div>
+    <header
+      class="fixed top-0 left-0 w-full h-[60px] md:h-[65px] z-[50] bg-[#f7f7f5] px-[26px] md:px-[60px] flex justify-between items-center transition-transform duration-500 ease-in-out"
+      [class.-translate-y-full]="
+        isHomePage() &&
+        !isScrolled() &&
+        !isMenuOpen() &&
+        !showLoginModal() &&
+        !showProfileModal()
+      "
+      [class.translate-y-0]="
+        !isHomePage() ||
+        isScrolled() ||
+        isMenuOpen() ||
+        showLoginModal() ||
+        showProfileModal()
+      "
+    >
+      <a
+        routerLink="/"
+        class="w-[128px] md:w-[138px] block z-[60]"
+        (click)="closeMenu()"
+      >
+        <img src="img/logo.png" alt="Miyabi Ryokan" class="w-full h-auto" />
+      </a>
 
-      <!-- Acciones Derecha -->
-      <div class="nav-right">
-        <a routerLink="/reservation" class="btn-booking">Reservas</a>
+      <div class="flex items-center gap-6 md:gap-8 z-[60]">
+        <div class="hidden md:flex items-center gap-4">
+          <a
+            routerLink="/reservation"
+            class="border border-gray-900 rounded-[4px] px-4 py-1.5 text-[12px] tracking-[0.15em] text-gray-900 uppercase hover:bg-gray-900 hover:text-white transition-colors"
+          >
+            Reservas
+          </a>
 
-        @if (authService.currentUser().isLoggedIn) {
-          <div class="profile-wrapper">
-            <button class="profile-badge" (click)="toggleProfileModal($event)">
-              {{ getInitials(authService.currentUser().guestName) }}
-            </button>
+          <div class="relative">
+            @if (authService.currentUser().isLoggedIn) {
+              <button
+                (click)="toggleProfileModal($event)"
+                class="border border-[#222] px-4 py-1.5 text-[12px] tracking-[0.15em] text-[#222] uppercase hover:bg-[#222] hover:text-white transition-colors cursor-pointer"
+              >
+                {{ getInitials(authService.currentUser().guestName) }}
+              </button>
 
-            @if (showProfileModal) {
-              <div class="profile-modal">
-                <div class="profile-info">
-                  <strong>{{ authService.currentUser().guestName }}</strong>
-                  <small>{{ authService.currentUser().role }}</small>
+              @if (showProfileModal()) {
+                <div
+                  class="absolute top-[45px] right-0 w-[260px] bg-[#f7f7f5] border border-[#e5e3df] py-5 px-6 shadow-sm z-[2000] flex flex-col gap-4 text-[#333]"
+                  (click)="$event.stopPropagation()"
+                >
+                  <div class="border-b border-[#e5e3df] pb-3">
+                    <strong
+                      class="block text-[14px] font-medium tracking-wide"
+                      >{{ authService.currentUser().guestName }}</strong
+                    >
+                    <small
+                      class="text-[11px] uppercase tracking-[0.1em] text-gray-500"
+                      >{{ authService.currentUser().role }}</small
+                    >
+                  </div>
+
+                  <div class="flex flex-col gap-2 text-[13px] tracking-wider">
+                    <a
+                      routerLink="/my-reservations"
+                      (click)="showProfileModal.set(false)"
+                      class="block py-1 hover:text-black transition-colors"
+                      >Mis Reservas</a
+                    >
+
+                    @if (authService.currentUser().role !== 'GUEST') {
+                      <a
+                        routerLink="/admin/dashboard"
+                        (click)="showProfileModal.set(false)"
+                        class="block py-1 font-medium hover:text-black transition-colors"
+                        >Panel Admin</a
+                      >
+                      <a
+                        routerLink="/admin/reports"
+                        (click)="showProfileModal.set(false)"
+                        class="block py-1 font-medium hover:text-black transition-colors"
+                        >Reportes</a
+                      >
+                    }
+                  </div>
+
+                  <div class="border-t border-[#e5e3df] pt-3 mt-1">
+                    <button
+                      (click)="logout()"
+                      class="block w-full text-left py-1 text-[12px] uppercase tracking-[0.1em] text-red-600 hover:text-red-800 transition-colors"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 </div>
-                <hr />
-                <a routerLink="/my-reservations" (click)="showProfileModal = false" class="profile-link">Mis Reservas</a>
-                @if (authService.currentUser().role !== 'GUEST') {
-                  <a routerLink="/admin/dashboard" (click)="showProfileModal = false" class="profile-link admin-link">Panel Admin</a>
-                  <a routerLink="/admin/reports" (click)="showProfileModal = false" class="profile-link admin-link">Reportes</a>
-                }
-                <a (click)="logout()" class="profile-link logout-btn">Finalizar Sesión</a>
-              </div>
+              }
+            } @else {
+              <button
+                (click)="toggleLoginModal($event)"
+                class="border border-[#222] rounded px-4 py-1.5 text-[12px] tracking-[0.15em] text-[#222] uppercase hover:bg-[#222] hover:text-white transition-colors cursor-pointer"
+              >
+                Iniciar Sesión
+              </button>
+
+              @if (showLoginModal()) {
+                <div
+                  class="absolute top-[45px] right-0 w-[300px] bg-[#f7f7f5] border border-[#e5e3df] p-6 shadow-sm z-[2000]"
+                  (click)="$event.stopPropagation()"
+                >
+                  <div
+                    class="flex justify-between items-center border-b border-[#e5e3df] pb-3 mb-5"
+                  >
+                    <h3
+                      class="text-[14px] uppercase tracking-[0.15em] text-[#333]"
+                    >
+                      Acceso
+                    </h3>
+                    <button
+                      class="bg-transparent border-none text-[14px] cursor-pointer hover:opacity-70 text-[#333]"
+                      (click)="toggleLoginModal($event)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <form (ngSubmit)="onLogin()" class="flex flex-col gap-4">
+                    <div>
+                      <input
+                        type="email"
+                        [(ngModel)]="email"
+                        name="email"
+                        placeholder="Email"
+                        required
+                        class="w-full bg-transparent border-b border-[#ccc] py-1.5 text-[13px] text-[#333] outline-none focus:border-[#222] transition-colors rounded-none placeholder-gray-400"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="password"
+                        [(ngModel)]="password"
+                        name="password"
+                        placeholder="Contraseña"
+                        required
+                        class="w-full bg-transparent border-b border-[#ccc] py-1.5 text-[13px] text-[#333] outline-none focus:border-[#222] transition-colors rounded-none placeholder-gray-400"
+                      />
+                    </div>
+
+                    @if (errorMessage()) {
+                      <p class="text-red-600 text-[12px] mt-1">
+                        {{ errorMessage() }}
+                      </p>
+                    }
+
+                    <button
+                      type="submit"
+                      class="w-full bg-[#222] text-white py-2.5 text-[12px] tracking-[0.15em] uppercase cursor-pointer hover:bg-black transition-colors mt-2"
+                    >
+                      Entrar
+                    </button>
+                  </form>
+
+                  <div class="border-t border-[#e5e3df] mt-5 pt-3">
+                    <a
+                      routerLink="/register"
+                      (click)="showLoginModal.set(false)"
+                      class="block text-center text-[12px] text-[#555] tracking-wider hover:text-black transition-colors"
+                      >Crear una cuenta nueva</a
+                    >
+                  </div>
+                </div>
+              }
             }
           </div>
-        } @else {
-          <div class="login-wrapper">
-            <button class="btn-login-trigger" (click)="toggleLoginModal($event)">Iniciar Sesión</button>
+        </div>
 
-            @if (showLoginModal) {
-              <div class="login-modal">
-                <div class="login-modal-header">
-                  <h3>Account Sign In</h3>
-                  <button class="close-login-btn" (click)="toggleLoginModal($event)">✕</button>
-                </div>
-                <form (ngSubmit)="onLogin()">
-                  <div class="input-group">
-                    <input type="email" [(ngModel)]="email" name="email" placeholder="Email" required />
-                  </div>
-                  <div class="input-group">
-                    <input type="password" [(ngModel)]="password" name="password" placeholder="Password" required />
-                  </div>
-                  @if (errorMessage) {
-                    <p class="error-msg">{{ errorMessage }}</p>
-                  }
-                  <button type="submit" class="btn-sign-in">INICIAR SESIÓN</button>
-                </form>
-                <hr class="login-divider" />
-                <p class="create-account-text">¿No tienes cuenta? Registra tu historial de pedidos y reservas.</p>
-                <a routerLink="/register" (click)="showLoginModal = false" class="create-link">Crear una cuenta</a>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Botón Hamburguesa tres líneas que se transforman en X -->
-        <button class="hamburger-btn" [class.active]="isSideMenuOpen" (click)="toggleSideMenu()">
-          <span class="line top"></span>
-          <span class="line middle"></span>
-          <span class="line bottom"></span>
+        <button
+          class="relative w-[25px] h-[15px] cursor-pointer z-[60]"
+          (click)="toggleMenu()"
+          aria-label="Menú"
+        >
+          <span
+            class="absolute top-0 left-0 w-full h-[1px] bg-black transition-transform duration-700 ease-in-out origin-center"
+            [class.translate-y-[7px]]="isMenuOpen()"
+            [class.rotate-45]="isMenuOpen()"
+          ></span>
+          <span
+            class="absolute bottom-0 left-0 w-full h-[1px] bg-black transition-transform duration-700 ease-in-out origin-center"
+            [class.-translate-y-[7px]]="isMenuOpen()"
+            [class.-rotate-45]="isMenuOpen()"
+          ></span>
         </button>
       </div>
-
-      <!-- Menú Deslizante Lateral (Side Menu Ryokan) -->
-      <div class="side-menu" [class.open]="isSideMenuOpen">
-        <nav class="menu-links">
-          <a routerLink="/" (click)="closeSideMenu()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
-          <a routerLink="/rooms" (click)="closeSideMenu()" routerLinkActive="active">Habitaciones</a>
-          <a routerLink="/facilities" (click)="closeSideMenu()" routerLinkActive="active">Instalaciones</a>
-          <a routerLink="/cuisine" (click)="closeSideMenu()" routerLinkActive="active">Cocina Kaiseki Horin</a>
-          <a routerLink="/spa" (click)="closeSideMenu()" routerLinkActive="active">Spa Entei</a>
-          <a routerLink="/amenities" (click)="closeSideMenu()" routerLinkActive="active">Amenidades de Yakushiyama</a>
-          <a routerLink="/experiences" (click)="closeSideMenu()" routerLinkActive="active">Experiencias Privadas Únicas</a>
-          <a routerLink="/stay-offers" (click)="closeSideMenu()" routerLinkActive="active">Ofertas de Estancia</a>
-          <a routerLink="/location" (click)="closeSideMenu()" routerLinkActive="active">Acceso</a>
-        </nav>
-      </div>
     </header>
+
+    <nav
+      class="fixed top-0 right-0 h-screen w-full md:w-[277px] bg-[#f7f7f5] z-[40] transform transition-transform duration-700 ease-[cubic-bezier(0.39,0.575,0.565,1)] pt-[100px] px-10"
+      [class.translate-y-0]="isMenuOpen()"
+      [class.-translate-y-full]="!isMenuOpen()"
+    >
+      <ul class="flex flex-col gap-8 mt-4">
+        @for (item of menuItems; track item.name; let i = $index) {
+          <li class="overflow-hidden">
+            <a
+              [routerLink]="item.path"
+              (click)="closeMenu()"
+              class="block text-[14px] tracking-[0.15em] text-gray-900 uppercase opacity-0 hover:text-gray-500 transition-colors"
+              [class.animate-slide-up]="isMenuOpen()"
+              [style.animation-delay]="0.6 + i * 0.1 + 's'"
+            >
+              {{ item.name }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
   `,
-  styles: [`
-    .miyabi-navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 50px;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 1000;
-      background-color: rgba(248, 247, 244, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    }
-    .nav-left .logo img {
-      height: 35px;
-      width: auto;
-      display: block;
-      transition: opacity 0.3s ease;
-    }
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 25px;
-      z-index: 1001;
-    }
-    .btn-booking {
-      border: 1px solid var(--color-enji);
-      background-color: var(--color-enji);
-      border-radius: 2px;
-      padding: 6px 20px;
-      text-decoration: none;
-      color: #FFFFFF !important;
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      transition: all 0.3s ease;
-    }
-    .btn-booking:hover {
-      background-color: var(--color-enji-hover);
-      border-color: var(--color-enji-hover);
-    }
-    .btn-login-trigger {
-      background: none;
-      border: none;
-      color: var(--color-sumi);
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-    .hamburger-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      width: 30px;
-      z-index: 1002;
-    }
-    .hamburger-btn .line {
-      width: 100%;
-      height: 1px;
-      background-color: var(--color-sumi);
-      transition: transform 0.4s ease, opacity 0.4s ease;
-    }
-    .hamburger-btn.active .top {
-      transform: translateY(7px) rotate(45deg);
-    }
-    .hamburger-btn.active .middle {
-      opacity: 0;
-    }
-    .hamburger-btn.active .bottom {
-      transform: translateY(-7px) rotate(-45deg);
-    }
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 300px;
-      height: 100vh;
-      background-color: var(--background);
-      display: flex;
-      align-items: flex-start;
-      padding-top: 100px;
-      padding-left: 40px;
-      transform: translateX(100%);
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 999;
-      box-shadow: -10px 0 30px rgba(0,0,0,0.05);
-    }
-    .side-menu.open {
-      transform: translateX(0);
-    }
-    .menu-links {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-    .menu-links a {
-      text-decoration: none;
-      color: var(--color-sumi);
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      transition: color 0.3s ease;
-    }
-    .menu-links a:hover, .menu-links a.active {
-      color: var(--color-enji);
-    }
-    .login-wrapper, .profile-wrapper {
-      position: relative;
-    }
-    .login-modal, .profile-modal {
-      position: absolute;
-      top: 40px;
-      right: 0;
-      width: 280px;
-      background: white;
-      border: 1px solid var(--color-border);
-      box-shadow: var(--shadow-zen-elevated);
-      padding: 20px;
-      z-index: 2000;
-      border-radius: 2px;
-    }
-    .login-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    .close-login-btn {
-      background: none;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .input-group {
-      margin-bottom: 12px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #CCC;
-      border-radius: 2px;
-      font-size: 13px;
-    }
-    .btn-sign-in {
-      width: 100%;
-      background: var(--color-enji);
-      color: white;
-      border: none;
-      padding: 10px;
-      font-size: 12px;
-      letter-spacing: 1px;
-      cursor: pointer;
-    }
-    .error-msg {
-      color: var(--color-enji);
-      font-size: 12px;
-      margin-bottom: 10px;
-    }
-    .profile-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: var(--color-enji);
-      color: white;
-      border: none;
-      font-weight: 600;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .profile-link {
-      display: block;
-      padding: 6px 0;
-      color: var(--color-sumi);
-      text-decoration: none;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .admin-link {
-      color: var(--color-asagi);
-      font-weight: 600;
-    }
-    .logout-btn {
-      color: var(--color-enji);
-    }
-    .login-divider {
-      margin: 15px 0;
-      border: 0;
-      border-top: 1px solid #EEE;
-    }
-    .create-account-text {
-      font-size: 11px;
-      color: #666;
-      margin-bottom: 8px;
-    }
-    .create-link {
-      font-size: 12px;
-      color: var(--color-enji);
-      text-decoration: none;
-      font-weight: 600;
-    }
-  `]
+  styles: [
+    `
+      @keyframes slideUpFade {
+        0% {
+          opacity: 0;
+          transform: translate3d(0, -16px, 0);
+        }
+        100% {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+      }
+      .animate-slide-up {
+        animation: slideUpFade 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) forwards;
+      }
+    `,
+  ],
 })
 export class NavbarComponent {
+  private router = inject(Router);
   authService = inject(AuthService);
-  router = inject(Router);
 
-  isSideMenuOpen = false;
-  showLoginModal = false;
-  showProfileModal = false;
+  isMenuOpen = signal(false);
+  isScrolled = signal(false);
+  showLoginModal = signal(false);
+  showProfileModal = signal(false);
+
   email = '';
   password = '';
-  errorMessage = '';
+  errorMessage = signal('');
 
-  toggleSideMenu() {
-    this.isSideMenuOpen = !this.isSideMenuOpen;
+  menuItems = [
+    { name: 'Inicio', path: '/' },
+    { name: 'Habitaciones', path: '/rooms' },
+    { name: 'Instalaciones', path: '/facilities' },
+    { name: 'Cocina Kaiseki Horin', path: '/cuisine' },
+    { name: 'Spa Entei', path: '/spa' },
+    { name: 'Amenidades', path: '/amenities' },
+    { name: 'Experiencias Únicas', path: '/experiences' },
+  ];
+
+  isHomePage(): boolean {
+    return this.router.url === '/';
   }
 
-  closeSideMenu() {
-    this.isSideMenuOpen = false;
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    const scrollOffset =
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      document.body.scrollTop ||
+      0;
+    const scrolled = scrollOffset > 50;
+    this.isScrolled.set(scrolled);
+
+    if (!scrolled && this.isHomePage() && !this.isMenuOpen()) {
+      this.showLoginModal.set(false);
+      this.showProfileModal.set(false);
+    }
+  }
+
+  toggleMenu() {
+    this.isMenuOpen.update((val) => !val);
+  }
+
+  closeMenu() {
+    this.isMenuOpen.set(false);
+    this.showLoginModal.set(false);
+    this.showProfileModal.set(false);
   }
 
   toggleLoginModal(event: Event) {
     event.stopPropagation();
-    this.showLoginModal = !this.showLoginModal;
-    this.errorMessage = '';
+    this.showLoginModal.update((val) => !val);
+    this.showProfileModal.set(false);
+    this.errorMessage.set('');
   }
 
   toggleProfileModal(event: Event) {
     event.stopPropagation();
-    this.showProfileModal = !this.showProfileModal;
+    this.showProfileModal.update((val) => !val);
+    this.showLoginModal.set(false);
   }
 
   onLogin() {
     if (!this.email || !this.password) return;
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
-      next: (res) => {
-        this.showLoginModal = false;
-        this.email = '';
-        this.password = '';
-        if (res.role && res.role !== 'GUEST') {
-          this.router.navigate(['/admin/dashboard']);
-        }
-      },
-      error: (err) => {
-        this.errorMessage = err.error || 'Credenciales incorrectas';
-      }
-    });
+
+    this.authService
+      .login({ email: this.email, password: this.password })
+      .subscribe({
+        next: (res: any) => {
+          this.showLoginModal.set(false);
+          this.email = '';
+          this.password = '';
+          if (res.role && res.role !== 'GUEST') {
+            this.router.navigate(['/admin/dashboard']);
+          }
+        },
+        error: (err: any) => {
+          this.errorMessage.set(err.error || 'Credenciales incorrectas');
+        },
+      });
   }
 
   logout() {
     this.authService.logout().subscribe(() => {
-      this.showProfileModal = false;
+      this.showProfileModal.set(false);
       this.router.navigate(['/']);
     });
   }

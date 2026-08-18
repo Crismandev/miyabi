@@ -22,21 +22,23 @@ import { filter } from 'rxjs';
       <app-footer></app-footer>
     }
   `,
-  styles: [`
-    .main-content {
-      min-height: 80vh;
-    }
-  `]
+  styles: [
+    `
+      .main-content {
+        min-height: 80vh;
+      }
+    `,
+  ],
 })
 export class AppComponent {
   private router = inject(Router);
   isAdminRoute = false;
 
   constructor() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.isAdminRoute = event.urlAfterRedirects.includes('/admin');
-    });
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.isAdminRoute = event.urlAfterRedirects.includes('/admin');
+      });
   }
 }
