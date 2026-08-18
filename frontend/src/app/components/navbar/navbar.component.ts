@@ -201,7 +201,7 @@ import { AuthService } from '../../services/auth.service';
     </header>
 
     <nav
-      class="fixed top-0 right-0 h-screen w-full md:w-[277px] bg-[#f7f7f5] z-[40] transform transition-transform duration-700 ease-[cubic-bezier(0.39,0.575,0.565,1)] pt-[100px] px-10"
+      class="fixed top-0 right-0 h-screen w-full md:w-[277px] bg-[#f7f7f5] z-[40] transform transition-transform duration-500 ease-[cubic-bezier(0.39,0.575,0.565,1)] pt-[100px] px-10"
       [class.translate-y-0]="isMenuOpen()"
       [class.-translate-y-full]="!isMenuOpen()"
     >
@@ -213,7 +213,7 @@ import { AuthService } from '../../services/auth.service';
               (click)="closeMenu()"
               class="block text-[14px] tracking-[0.15em] text-gray-900 uppercase opacity-0 hover:text-gray-500 transition-colors"
               [class.animate-slide-up]="isMenuOpen()"
-              [style.animation-delay]="0.6 + i * 0.1 + 's'"
+              [style.animation-delay]="0.4 + i * 0.1 + 's'"
             >
               {{ item.name }}
             </a>
