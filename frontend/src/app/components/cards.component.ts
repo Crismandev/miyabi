@@ -158,7 +158,7 @@ export interface CardData {
         <div
           class="px-[26px] md:px-0"
           [ngClass]="{
-            'md:mr-[85px] md:w-[370px] md:shrink-0 mt-[40px] md:mt-0 md:pt-[60px]':
+            'md:mr-[85px] md:w-[380px] md:shrink-0 mt-[40px] md:mt-0 md:pt-[60px]':
               layout === 'side',
             'mt-[40px] md:mt-[80px] w-full max-w-[800px] mx-auto text-center':
               layout === 'bottom',
